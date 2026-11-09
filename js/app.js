@@ -133,7 +133,7 @@ function offloadNote(d) {
       ${m3(s.volume)} is about ${loads} wheelbarrow loads${big ? ', so you will need a large team. For this much, a pump is usually the better choice' : ''}.
       The truck can wait up to ${mins} minutes to unload; after that, waiting time is charged at ${waiting}.</p>
       <label class="check"><input type="checkbox" data-field="barrowOk" data-key="barrowOk" ${s.barrowOk ? 'checked' : ''}>
-        <span>I'll have enough people and wheelbarrows to unload within ${mins} minutes, and I accept waiting-time charges after that.</span></label>
+        <span>I'll have enough people and wheelbarrows to unload within ${mins} minutes, and I accept <a href="${C.termsUrl}" target="_blank" rel="noopener">waiting-time charges</a> after that.</span></label>
     </div>`;
   }
   if (s.offload === 'pumpsl') {
@@ -363,7 +363,7 @@ function callView() {
         <button type="submit" class="btn btn-green" style="align-self:flex-start">Request callback</button>
       </form>`;
   return `<div class="panel-pair">
-    <div class="dark-panel on-dark">
+    <div class="dark-panel on-dark photo-panel">
       <h3 class="step-title">Speak to our planners</h3>
       <a class="big-phone" href="${C.orderPhoneHref}">${esc(C.orderPhone)}</a>
       <p>Monday–Friday 7:00–16:00 · Saturday ${orTbd(C.saturdayHours, 'hours')} · Sunday closed</p>

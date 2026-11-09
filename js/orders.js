@@ -14,7 +14,8 @@ export const STATUSES = {
   declined: { label: 'Declined' },
 };
 
-export const TIMES = { am: 'AM', pm: 'PM', any: 'Any time' };
+// Dutch customers use the 24-hour clock.
+export const TIMES = { am: '7:00–12:00', pm: '12:00–16:00', any: 'any time' };
 
 export const slotText = (slot) => (slot ? `${slot.dow} ${slot.dm} · ${TIMES[slot.time] ?? ''}` : '—');
 
@@ -48,16 +49,17 @@ export function counts(orders) {
 
 // What the customer would be sent. Planners never set prices: the estimate comes from the shop.
 export function customerMessage(order) {
-  const first = (order.name || '').trim().split(' ')[0] || 'there';
+  const name = (order.name || '').trim() || 'customer';
+  const sign = `SL Materials Planning, ${CONFIG.contact.orderPhone}`;
   const price = formatEUR(order.estimate, CONFIG.locale);
   if (order.status === 'confirmed') {
-    return `Hi ${first}, your SL Materials delivery is confirmed for ${slotText(order.slot)}: ${order.mix}, ${order.volume.toFixed(1)} m³. Final price ${price} excl. BTW. Pay here: [payment link]`;
+    return `Dear ${name}, your concrete delivery is confirmed for ${slotText(order.slot)}: ${order.mix}, ${order.volume.toFixed(1)} m³. Final price ${price} excl. BTW. Please complete payment here: [payment link]. ${sign}`;
   }
   if (order.status === 'offered') {
-    return `Hi ${first}, we can't make ${slotText(order.slot)}. Can we deliver ${slotText(order.offeredSlot)} instead? Tap to accept: [link]`;
+    return `Dear ${name}, unfortunately we are unable to deliver on ${slotText(order.slot)}. We can offer ${slotText(order.offeredSlot)} instead. Please confirm this new time here: [link], or call us to discuss. ${sign}`;
   }
   if (order.status === 'declined') {
-    return `Hi ${first}, sorry, we can't take this order online. A planner will call you to talk it through. Your card hold has been released.`;
+    return `Dear ${name}, we are unable to accept this order online. A planner will call you to discuss the options. The hold on your card has been released. ${sign}`;
   }
   return '';
 }

@@ -69,11 +69,12 @@ test('customer messages carry the shop price, never a planner price', () => {
   const o = { ...O.sampleOrders()[1], name: 'Joost Bakker' };
   assert.equal(O.customerMessage(o), '');
   const conf = O.customerMessage(O.applyAction(o, 'confirm'));
-  assert.match(conf, /^Hi Joost,/);
+  assert.match(conf, /^Dear Joost Bakker,/);
   assert.match(conf, /€885\.00 excl\. BTW/);
   const off = O.customerMessage(O.applyAction(o, 'offer', { slot: slot('2026-11-12', 'pm') }));
-  assert.match(off, /Wed 11 Nov · PM instead/);
-  assert.match(O.customerMessage(O.applyAction(o, 'decline')), /hold has been released/);
+  assert.match(off, /offer Wed 11 Nov · 12:00–16:00 instead/);
+  assert.doesNotMatch(off, /\b(AM|PM)\b/);
+  assert.match(O.customerMessage(O.applyAction(o, 'decline')), /hold on your card has been released/);
 });
 
 test('slots sort by date, then morning before afternoon', () => {

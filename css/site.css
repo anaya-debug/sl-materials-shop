@@ -277,3 +277,13 @@ input[type=range] { flex: 1 1 auto; accent-color: var(--ink); height: 32px; min-
 
 .faq a { font-weight: 600; }
 .site-footer a { color: var(--grey); }
+
+/* Logo and Shop label read as one button */
+.brand { gap: 10px; padding: 7px 8px 7px 12px; border: 1.5px solid #333; border-radius: var(--pill); }
+.brand:hover { border-color: var(--green); }
+
+/* More photos (James: "images behind almost every part") */
+.how-photo { margin: 24px 0 0; border-radius: var(--radius-lg); overflow: hidden; aspect-ratio: 21 / 9; }
+.how-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.trade { background: linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.8) 60%, rgba(0,0,0,.55) 100%), url('../img/engineer.jpg') center 30% / cover no-repeat, var(--black); }
+.photo-panel { background: linear-gradient(180deg, rgba(0,0,0,.82), rgba(0,0,0,.92)), url('../img/truck.jpg') center / cover no-repeat, var(--black); }
