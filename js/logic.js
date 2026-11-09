@@ -1,0 +1,138 @@
+// Pure order logic: no DOM, so it can be unit tested with `npm test`.
+
+export const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+
+export function parseNum(v) {
+  const n = parseFloat(String(v ?? '').trim().replace(',', '.'));
+  return Number.isFinite(n) ? n : NaN;
+}
+
+export function formatEUR(n, locale = 'en-GB') {
+  return '€' + n.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ---- Volume ----
+
+export function clampVolume(v, { min, max, step }) {
+  const snapped = Math.round(v / step) * step;
+  return Math.min(max, Math.max(min, snapped));
+}
+
+export function stepVolume(v, dir, cfg) {
+  return clampVolume(v + dir * cfg.step, cfg);
+}
+
+// Length and width in metres, depth in millimetres.
+export function calcVolume(len, wid, depthMm, { min, max, step, wastagePct }) {
+  const L = parseNum(len), W = parseNum(wid), D = parseNum(depthMm);
+  const ok = L > 0 && W > 0 && D > 0;
+  if (!ok) return { ok: false, raw: 0, withWaste: 0, recommended: 0, tooBig: false };
+  const raw = (L * W * D) / 1000;
+  const withWaste = raw * (1 + wastagePct / 100);
+  // Round up to the next step; the tiny offset stops 2.0000000001 becoming 2.5.
+  const recommended = Math.max(min, Math.ceil(withWaste / step - 1e-9) * step);
+  return { ok, raw, withWaste, recommended, tooBig: recommended > max };
+}
+
+// ---- Postcode ----
+
+export function checkPostcode(input, ranges) {
+  const pc = String(input ?? '').replace(/\s+/g, '').toUpperCase();
+  const entered = /^\d{4}/.test(pc);
+  const valid = /^[1-9]\d{3}([A-Z]{2})?$/.test(pc);
+  const num = entered ? parseInt(pc.slice(0, 4), 10) : NaN;
+  const inArea = valid && ranges.some(([lo, hi]) => num >= lo && num <= hi);
+  const formatted = valid ? (pc.length > 4 ? pc.slice(0, 4) + ' ' + pc.slice(4) : pc) : pc;
+  // Only call it badly formed once it is long enough to judge.
+  const badFormat = !valid && pc.length >= 6;
+  return { entered, valid, inArea, badFormat, formatted };
+}
+
+// ---- Delivery days ----
+
+// The next `count` delivery days after `from`: no Sundays, Saturdays flagged.
+export function nextDeliveryDays(from, count, locale = 'en-GB') {
+  const days = [];
+  const d = new Date(from);
+  d.setHours(12, 0, 0, 0);
+  while (days.length < count) {
+    d.setDate(d.getDate() + 1);
+    const wd = d.getDay();
+    if (wd === 0) continue;
+    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+    days.push({
+      key: `${y}-${m}-${dd}`,
+      saturday: wd === 6,
+      dow: d.toLocaleDateString(locale, { weekday: 'short' }),
+      dm: d.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+    });
+  }
+  return days;
+}
+
+// ---- Price ----
+
+// Each line has a state:
+//   none       not part of this order
+//   included   part of it at no extra cost
+//   priced     amount is counted in the total
+//   tbd        applies, but the price is still to agree (not counted)
+//   onConfirm  applies, priced by the planner on confirmation (not counted)
+export function priceOrder({ volume, stone = 'std', fibres = false, offload = null, saturday = false }, p) {
+  const lines = [];
+  const add = (key, state, amount = null) => lines.push({ key, state, amount: amount == null ? null : round2(amount) });
+
+  add('concrete', 'priced', p.basePerM3 * volume);
+
+  const stoneAdd = p.stoneAddPerM3[stone] ?? 0;
+  add('stone', stoneAdd ? 'priced' : 'included', stoneAdd ? stoneAdd * volume : null);
+
+  if (!fibres) add('fibres', 'none');
+  else if (p.fibresPerM3 == null) add('fibres', 'tbd');
+  else add('fibres', 'priced', p.fibresPerM3 * volume);
+
+  if (offload !== 'pumpsl') add('pump', 'none');
+  else if (p.pumpBySL == null) add('pump', 'onConfirm');
+  else add('pump', 'priced', p.pumpBySL);
+
+  if (!saturday) add('saturday', 'none');
+  else if (p.saturdaySurcharge == null) add('saturday', 'tbd');
+  else add('saturday', 'priced', p.saturdaySurcharge);
+
+  const pl = p.partLoad || {};
+  if (pl.underM3 == null || pl.charge == null) add('partLoad', 'tbd');
+  else if (volume < pl.underM3) add('partLoad', 'priced', pl.charge);
+  else add('partLoad', 'none');
+
+  if (p.deliveryCharge == null) add('delivery', 'tbd');
+  else add('delivery', 'priced', p.deliveryCharge);
+
+  const total = round2(lines.reduce((sum, l) => sum + (l.state === 'priced' ? l.amount : 0), 0));
+  const contingency = round2(total * p.contingencyPct / 100);
+  return { lines, total, contingency, hold: round2(total + contingency) };
+}
+
+// ---- Step checks ----
+
+export const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s ?? '').trim());
+
+// state: the wizard state; ctx: { hasMix, inArea, dayChosen }
+export function checkStep(step, state, ctx) {
+  if (step === 1) {
+    return ctx.hasMix ? { ok: true, hint: 'Next: delivery and volume.' } : { ok: false, hint: 'Choose a project or a mix code.' };
+  }
+  if (step === 2) {
+    if (!ctx.inArea) return { ok: false, hint: 'Enter a postcode in our delivery area.' };
+    if (!state.offload) return { ok: false, hint: 'Choose an offloading method.' };
+    return { ok: true, hint: 'Next: date and your details.' };
+  }
+  if (step === 3) {
+    if (!ctx.dayChosen) return { ok: false, hint: 'Pick a delivery date.' };
+    const nameOk = state.name.trim().length > 1;
+    const phoneOk = state.phone.replace(/\D/g, '').length >= 9;
+    if (!nameOk || !phoneOk || !isEmail(state.email)) return { ok: false, hint: 'Fill in your name, phone and email.' };
+    if (!state.terms) return { ok: false, hint: 'Please accept the terms.' };
+    return { ok: true, hint: 'Next: check and confirm.' };
+  }
+  return { ok: true, hint: 'Nothing is charged until a planner confirms.' };
+}

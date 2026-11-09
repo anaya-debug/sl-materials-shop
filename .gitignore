@@ -1,0 +1,7 @@
+# Internal, never uploaded: the SL Materials brief and approved mock-ups.
+CLAUDE.md
+reference/
+# System files
+.DS_Store
+Icon?
+node_modules/

@@ -1,0 +1,26 @@
+/* Brand tokens, taken from sl-materials.nl. Change colours and type here only. */
+:root {
+  --green: #99E424;        /* accent and button fill; never as text on white */
+  --on-green: #000000;
+  --black: #000000;        /* header, hero, footer */
+  --ink: #141414;          /* body text */
+  --card-dark: #1C1C1C;    /* cards on black */
+  --grey: #AAAAAA;
+  --grey-text: #555555;    /* secondary text on white (7.5:1) */
+  --grey-soft: #D6D6D6;    /* text on black, borders */
+  --section: #F4F4F4;
+  --white: #FFFFFF;
+  --green-tint: #F2FBE3;   /* selected options, notes */
+  --ok: #2F6B00;
+  --warn: #A33A00;
+  --rule: #E6E6E6;
+
+  --font: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius-lg: 20px;
+  --radius: 14px;
+  --radius-field: 12px;
+  --pill: 999px;
+  --page: 1240px;
+  --gutter: 16px;
+}
+@media (min-width: 600px) { :root { --gutter: 24px; } }
