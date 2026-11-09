@@ -299,3 +299,21 @@ input[type=range] { flex: 1 1 auto; accent-color: var(--ink); height: 32px; min-
 .cust-toggle .seg { background: transparent; color: var(--grey-soft); border: 0; min-height: 36px; padding: 6px 14px; font-size: 14px; }
 .cust-toggle .seg[aria-pressed="true"] { background: var(--green); color: var(--on-green); }
 .vat-lines { border-top: 1px solid #333; padding-top: 10px; }
+
+/* NL / EN switch, top right of the header */
+.lang-toggle { display: inline-flex; flex: 0 0 auto; border: 1.5px solid #3A3A3A; border-radius: var(--pill); padding: 3px; gap: 2px; }
+.lang-toggle button { border: 0; background: transparent; color: var(--grey-soft); font-weight: 700; font-size: 13px; letter-spacing: .04em; min-width: 38px; min-height: 34px; border-radius: var(--pill); padding: 0 8px; }
+.lang-toggle button[aria-pressed="true"] { background: var(--white); color: var(--black); }
+.lang-toggle button:hover { color: var(--white); }
+.lang-toggle button[aria-pressed="true"]:hover { color: var(--black); }
+/* Phones: one round button showing the other language, so the header still fits. */
+@media (max-width: 599px) {
+  .bar { gap: 8px; }
+  .brand { padding: 6px 6px 6px 10px; gap: 7px; }
+  .brand-logo { height: 17px; }
+  .shop-pill { font-size: 11px; padding: 2px 7px; }
+  .icon-btn { width: 40px; height: 40px; }
+  .lang-toggle { border-radius: var(--pill); padding: 0; }
+  .lang-toggle button { width: 40px; height: 40px; min-width: 40px; min-height: 40px; padding: 0; }
+  .lang-toggle button[aria-pressed="true"] { display: none; }
+}

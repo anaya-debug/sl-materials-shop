@@ -44,6 +44,14 @@ test('price: stone size and fibres per m³', () => {
   assert.equal(total({ volume: 2, fibres: true }), base + 16);
 });
 
+test('price: old-shop extras per m³', () => {
+  const base = total({ volume: 2 });
+  assert.equal(total({ volume: 2, addOns: ['highStrength'] }), base + 14.3);
+  assert.equal(total({ volume: 2, addOns: ['highStrength', 'fastSetting'] }), base + 25.3);
+  assert.equal(total({ volume: 2, consistency: 'S4' }), base + 6);
+  assert.equal(line({ volume: 2 }, 'extras').state, 'none');
+});
+
 test('price: BTW and the hold (always incl. BTW, plus the 15% allowance)', () => {
   const p = L.priceOrder({ volume: 2 }, P);
   assert.equal(p.total, 545);          // excl. BTW

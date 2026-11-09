@@ -42,7 +42,7 @@ function row(o) {
   const contact = o.phone
     ? `<a href="tel:${esc(o.phone.replace(/[^\d+]/g, ''))}">${esc(o.phone)}</a>`
     : esc(o.contact);
-  const extras = [o.consistency, o.stone, o.fibres ? 'fibres' : ''].filter(Boolean).join(' · ');
+  const extras = [o.consistency, o.stone, o.fibres ? 'fibres' : '', ...(o.extras || [])].filter(Boolean).join(' · ');
   const offered = o.status === 'offered' && o.offeredSlot ? `<span class="p-sub-line">Offered: ${esc(slotText(o.offeredSlot))}</span>` : '';
   const actions = o.status === 'waiting'
     ? `<div class="p-actions">

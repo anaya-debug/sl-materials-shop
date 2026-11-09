@@ -88,11 +88,11 @@ export function tomorrowKey(today = new Date()) {
 
 // ---- Building an order from the shop ----
 
-export function orderFromShop({ id, at, slot, name, phone, email, notes, postcode, job, mix, volume, offload, stone, consistency, fibres, estimate, hold }) {
+export function orderFromShop({ id, at, slot, name, phone, email, notes, postcode, job, mix, volume, offload, stone, consistency, fibres, extras = [], estimate, hold }) {
   return {
     id, createdAt: at, updatedAt: at, source: 'shop', status: 'waiting', offeredSlot: null,
     slot, who: name, name, phone, email, contact: 'Phone', pc: postcode,
-    job, note: notes || '', mix, volume, offload, stone, consistency, fibres: !!fibres,
+    job, note: notes || '', mix, volume, offload, stone, consistency, fibres: !!fibres, extras,
     estimate: round2(estimate), hold: round2(hold),
   };
 }
@@ -111,11 +111,11 @@ export function sampleOrders(today = new Date()) {
     stone: id === 'sample-d' ? '2–8 mm' : '4–32 mm', consistency: id === 'sample-d' ? 'S4' : 'S3', fibres: false, estimate, hold: round2(withVat(estimate, CONFIG.pricing.vatPct) * (1 + CONFIG.pricing.contingencyPct / 100)),
   });
   return [
-    { ...mk('sample-a', slot(0, 'am'), 'Homeowner', 'Anna', '1013', 'WhatsApp', 'Shed base', 'Gate 1.2 m wide', 'C20/25', 2.5, 'Wheelbarrow', est(2.5)), phone: '+31 6 12 34 56 78' },
-    mk('sample-b', slot(1, 'am'), 'Small builder', 'Joost', '1503', 'Phone', 'Strip foundations', 'Extension, 2 pours', 'C20/25', 6, 'Chute', est(6)),
+    { ...mk('sample-a', slot(0, 'am'), 'Homeowner', 'Anna', '1013', 'WhatsApp', 'Rough concrete floor', 'Gate 1.2 m wide', 'C20/25', 2.5, 'Wheelbarrow', est(2.5)), phone: '+31 6 12 34 56 78' },
+    mk('sample-b', slot(1, 'am'), 'Small builder', 'Joost', '1503', 'Phone', 'Foundations', 'Extension, 2 pours', 'C20/25', 6, 'Chute', est(6)),
     mk('sample-c', slot(1, 'pm'), 'Homeowner', 'Fatima', '2011', 'Email', 'Not sure', 'Garden room, 4 × 3 m', 'Advise', 1.5, 'Chute', est(1.5)),
-    mk('sample-d', slot(2, 'am'), 'Landscaper', 'Pieter', '1441', 'Phone', 'Patio', 'Fine finish wanted', 'C25/30', 3, 'Pump (SL)', est(3, 'fine', 'pumpsl')),
-    mk('sample-e', slot(3, 'pm'), 'Homeowner', 'Eva', '1072', 'WhatsApp', 'Driveway', 'Narrow street, canal side', 'C30/37', 4.5, 'Chute', est(4.5)),
+    mk('sample-d', slot(2, 'am'), 'Landscaper', 'Pieter', '1441', 'Phone', 'Power-floated floor', 'Fine finish wanted', 'C25/30', 3, 'Pump (SL)', est(3, 'fine', 'pumpsl')),
+    mk('sample-e', slot(3, 'pm'), 'Homeowner', 'Eva', '1072', 'WhatsApp', 'Agricultural', 'Narrow street, canal side', 'C30/37', 4.5, 'Chute', est(4.5)),
   ];
 }
 

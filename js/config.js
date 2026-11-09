@@ -12,6 +12,9 @@ export const CONFIG = {
     fromPricePerM3: 120,       // "From ... per m³" on the homepage
     // Extra per m³ by stone size.
     stoneAddPerM3: { std: 0, mid: 8.5, fine: 14 },
+    // Extras per m³, from SL's old shop (betonconcurrent.nl): high strength, fast-setting, highly fluid (S4).
+    addOnsPerM3: { highStrength: 7.15, fastSetting: 5.5 },
+    consistencyAddPerM3: { S1: 0, S2: 0, S3: 0, S4: 3 },
     // BTW (Dutch VAT). Private customers see prices including it; business customers see it added.
     vatPct: 21,
     // Allowance added to the card hold for small changes on site or extra waiting time.
@@ -56,7 +59,7 @@ export const CONFIG = {
     radiusKm: 30,
   },
 
-  responseTimes: { quote: '48 hours', callback: null },
+  responseTimes: { quote: '48 hours', quoteNl: '48 uur', callback: null },
 
   contact: {
     orderPhone: '+31 6 57 76 13 12',
@@ -67,6 +70,7 @@ export const CONFIG = {
     mainPhoneHref: 'tel:+31202805900',
     address: 'Kruisbaken 2, 1505 HS Zaandam',
     hours: 'Mon–Fri 7:00–16:00',
+    hoursNl: 'ma–vr 7:00–16:00',
     saturdayHours: null,
     whatsapp: null,
     tradePaymentTerms: null,

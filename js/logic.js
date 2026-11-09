@@ -87,7 +87,7 @@ export function splitTrucks(volume, truckM3) {
 //   priced     amount is counted in the total
 //   tbd        applies, but the price is still to agree (not counted)
 //   onConfirm  applies, priced by the planner on confirmation (not counted)
-export function priceOrder({ volume, stone = 'std', fibres = false, offload = null, saturday = false }, p) {
+export function priceOrder({ volume, stone = 'std', fibres = false, offload = null, saturday = false, addOns = [], consistency = 'S3' }, p) {
   const lines = [];
   const add = (key, state, amount = null, extra = {}) => lines.push({ key, state, amount: amount == null ? null : round2(amount), ...extra });
   const { trucks, perTruck } = splitTrucks(volume, p.truckM3 || Infinity);
@@ -96,6 +96,10 @@ export function priceOrder({ volume, stone = 'std', fibres = false, offload = nu
 
   const stoneAdd = p.stoneAddPerM3[stone] ?? 0;
   add('stone', stoneAdd ? 'priced' : 'included', stoneAdd ? stoneAdd * volume : null);
+
+  // Extras (old shop prices): chosen add-ons plus the highly fluid S4 mix.
+  const addPerM3 = addOns.reduce((sum, id) => sum + (p.addOnsPerM3?.[id] ?? 0), 0) + (p.consistencyAddPerM3?.[consistency] ?? 0);
+  add('extras', addPerM3 ? 'priced' : 'none', addPerM3 ? addPerM3 * volume : null);
 
   if (!fibres) add('fibres', 'none');
   else if (p.fibresPerM3 == null) add('fibres', 'tbd');

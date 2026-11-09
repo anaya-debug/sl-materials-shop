@@ -17,7 +17,8 @@ npm test           # unit tests for price, volume, postcode, delivery days and s
 | `js/config.js` | Every price, the delivery area, contact details. `null` = still to agree (shown as a highlighted `[placeholder]`, left out of the total) |
 | `js/catalogue.js` | Project types, mix codes, offloading, consistency and stone options |
 | `js/logic.js` | Price, volume calculator, postcode check, delivery days, step rules (no page code, so it is testable) |
-| `js/app.js` | The order tool on the page |
+| `js/app.js` | The order tool on the page (English and Dutch side by side, via `tx()`) |
+| `js/i18n.js` | NL / EN switch: page text carries its Dutch in `data-nl` attributes |
 | `planner.html`, `js/planner.js`, `css/planner.css` | Planner inbox (internal): confirm, offer another time, decline, undo |
 | `js/orders.js` | Order requests shared by shop and inbox: status changes, customer messages, sample data, storage |
 | `css/tokens.css` | Brand colours and type from sl-materials.nl |
@@ -37,6 +38,6 @@ npm test           # unit tests for price, volume, postcode, delivery days and s
 - Suggested prices to confirm with the team (marked SUGGESTED in `js/config.js`): fibres €8/m³,
   part load €35 per m³ a truck is short of 8 m³, delivery €95 per truck.
 - New-order notifications for planners (email or push) need the live server; the preview shows an alert on the page.
-- Mix codes in `js/catalogue.js` to be checked with James.
-- Dutch translation.
+- Uses and extras now follow SL's old shop (betonconcurrent.nl); the strength class of the standard mix is still to confirm.
+- Dutch translation of the planner inbox (the shop itself is in Dutch and English).
 - Dutch public holidays are not yet excluded from delivery days.
