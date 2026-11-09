@@ -7,6 +7,7 @@ Plain HTML, CSS and JavaScript. No build step, so it runs on any static host.
 
 ```bash
 npm start          # serves the site at http://localhost:8790
+npm run version:bump   # before publishing: makes browsers load the new files
 npm test           # unit tests for price, volume, postcode, delivery days and step checks
 ```
 

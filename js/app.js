@@ -1,8 +1,8 @@
-import { CONFIG } from './config.js';
-import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js';
-import * as L from './logic.js';
-import { addOrder, orderFromShop } from './orders.js';
-import { tx, isNl, locale, setLang, applyStatic } from './i18n.js';
+import { CONFIG } from './config.js?v=202611091830';
+import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611091830';
+import * as L from './logic.js?v=202611091830';
+import { addOrder, orderFromShop } from './orders.js?v=202611091830';
+import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611091830';
 
 const P = CONFIG.pricing;
 const C = CONFIG.contact;

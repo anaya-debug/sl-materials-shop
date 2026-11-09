@@ -317,3 +317,23 @@ input[type=range] { flex: 1 1 auto; accent-color: var(--ink); height: 32px; min-
   .lang-toggle button { width: 40px; height: 40px; min-width: 40px; min-height: 40px; padding: 0; }
   .lang-toggle button[aria-pressed="true"] { display: none; }
 }
+
+/* Language switch in brand colours: selected = green with dark text, like the Shop label and buttons. */
+.lang-toggle { border-color: #3A3A3A; }
+.lang-toggle button { color: var(--grey-soft); }
+.lang-toggle button[aria-pressed="true"],
+.lang-toggle button[aria-pressed="true"]:hover { background: var(--green); color: var(--on-green); }
+@media (max-width: 599px) {
+  /* Phones show one button (the other language): green with dark text. */
+  .lang-toggle { border: 0; }
+  .lang-toggle button { background: var(--green); color: var(--on-green); }
+  .lang-toggle button:hover { background: #8BD31C; color: var(--on-green); }
+}
+
+/* Header: keep menu items on one line; the phone number only shows on wide screens. */
+.main-nav a, .header-cta, .header-phone { white-space: nowrap; }
+@media (min-width: 900px) and (max-width: 1199px) {
+  .bar { gap: 20px; }
+  .main-nav ul { gap: 16px; }
+  .header-phone { display: none; }
+}

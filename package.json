@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "start": "python3 -m http.server 8790"
+    "start": "python3 -m http.server 8790",
+    "version:bump": "python3 scripts/bump-version.py"
   }
 }
