@@ -33,7 +33,8 @@ export const CONFIG = {
     // Not set yet:
     pumpBySL: null,            // pump hire is priced by the planner and charged separately
     saturdaySurcharge: null,
-    waitingPerHour: null,      // after the free 30 minutes; Heidelberg NL charges €80 per hour
+    // Waiting time after the free 30 minutes (James, 9 Nov): €50 per started 15 minutes.
+    waiting: { perBlock: 50, blockMinutes: 15 },
   },
 
   // Unloading time included with every delivery.

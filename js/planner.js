@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 import { formatEUR, nextDeliveryDays } from './logic.js';
-import { STATUSES, applyAction, counts, customerMessage, loadOrders, saveOrders, resetOrders, slotText, slotSortKey, needsSLPump, setPump, tomorrowKey } from './orders.js';
+import { STATUSES, applyAction, counts, customerMessage, loadOrders, saveOrders, resetOrders, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => formatEUR(n, CONFIG.locale);
@@ -11,6 +11,11 @@ let filter = 'all';
 const FILTER_LABELS = { all: 'All', waiting: 'Waiting', confirmed: 'Confirmed', offered: 'New time offered', declined: 'Declined' };
 
 // ---------- Rendering ----------
+
+function barrowCheck(o) {
+  if (!needsBarrowCheck(o)) return '';
+  return `<p class="barrow-check"><strong>Wheelbarrow, ${o.volume.toFixed(1)} m³:</strong> check on the call that they have enough people to unload within 30 minutes.</p>`;
+}
 
 function pumpBox(o) {
   if (!needsSLPump(o)) return '';
@@ -52,13 +57,13 @@ function row(o) {
   return `<tr class="${isNew ? 'is-new' : ''} ${isTomorrow ? 'is-tomorrow' : ''}">
     <td data-col="slot">${isTomorrow ? '<span class="tomorrow-tag">Tomorrow</span>' : ''}${esc(slotText(o.slot))}${offered}</td>
     <td data-col="customer"><span class="p-strong">${esc(o.who)}</span>${isNew ? '<span class="new-tag">New</span>' : ''}<span class="p-sub-line">${esc(o.pc)} · ${contact}</span></td>
-    <td data-col="job"><span>${esc(o.job)}</span>${o.note ? `<span class="p-sub-line">${esc(o.note)}</span>` : ''}${pumpBox(o)}</td>
+    <td data-col="job"><span>${esc(o.job)}</span>${o.note ? `<span class="p-sub-line">${esc(o.note)}</span>` : ''}${barrowCheck(o)}${pumpBox(o)}</td>
     <td class="desk p-strong" data-col="mix">${esc(o.mix)}${extras ? `<span class="p-sub-line" style="font-weight:400">${esc(extras)}</span>` : ''}</td>
     <td class="desk num" data-col="vol">${o.volume.toFixed(1)} m³</td>
-    <td class="desk" data-col="offload">${needsSLPump(o) ? `<span class="pump-flag">${esc(o.offload)}</span>` : esc(o.offload)}</td>
+    <td class="desk" data-col="offload">${needsSLPump(o) || needsBarrowCheck(o) ? `<span class="pump-flag">${esc(o.offload)}</span>` : esc(o.offload)}</td>
     <td class="desk num" data-col="est">${money(o.estimate)}</td>
     <td data-col="status"><span class="badge badge-${o.status}">${st.label}</span></td>
-    <td data-col="facts"><span class="p-strong">${esc(o.mix)}</span><span>${o.volume.toFixed(1)} m³</span><span class="${needsSLPump(o) ? 'pump-flag' : ''}">${esc(o.offload)}</span><span>${money(o.estimate)}</span>${extras ? `<span class="p-sub-line" style="flex-basis:100%">${esc(extras)}</span>` : ''}</td>
+    <td data-col="facts"><span class="p-strong">${esc(o.mix)}</span><span>${o.volume.toFixed(1)} m³</span><span class="${needsSLPump(o) || needsBarrowCheck(o) ? 'pump-flag' : ''}">${esc(o.offload)}</span><span>${money(o.estimate)}</span>${extras ? `<span class="p-sub-line" style="flex-basis:100%">${esc(extras)}</span>` : ''}</td>
     <td data-col="actions">${callNote}${actions}</td>
   </tr>`;
 }

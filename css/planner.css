@@ -111,3 +111,4 @@ body.planner { background: var(--section); --page: 1480px; }
   .pump-box .input { font-size: 14px; }
 }
 @media (min-width: 760px) { .p-info { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); } }
+.barrow-check { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: #FFF6E5; border: 1px solid #F0D9A8; font-size: 13px; line-height: 1.45; }

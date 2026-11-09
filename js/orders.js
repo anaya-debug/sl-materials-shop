@@ -64,6 +64,9 @@ export function customerMessage(order) {
   return '';
 }
 
+// Wheelbarrow orders over this size get a "check on the call" flag for planners.
+export const needsBarrowCheck = (order) => /wheelbarrow/i.test(order.offload || '') && order.volume > CONFIG.barrowWarnM3;
+
 // Orders where the customer asked SL to arrange the pump.
 export const needsSLPump = (order) => /pump \(sl\)/i.test(order.offload || '');
 

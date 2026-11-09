@@ -39,6 +39,13 @@ test('SL pump requests: flagged and editable by the planner', () => {
   assert.equal(d.pump, undefined, 'original is not changed');
 });
 
+test('big wheelbarrow orders are flagged for a check on the call', () => {
+  const a = O.sampleOrders()[0]; // 2.5 m³ by wheelbarrow
+  assert.equal(O.needsBarrowCheck(a), true);
+  assert.equal(O.needsBarrowCheck({ ...a, volume: 2 }), false);
+  assert.equal(O.needsBarrowCheck({ ...a, offload: 'Chute' }), false);
+});
+
 test('tomorrow key', () => {
   assert.equal(O.tomorrowKey(new Date(2026, 10, 30)), '2026-12-01');
 });

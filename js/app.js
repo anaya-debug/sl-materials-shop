@@ -127,7 +127,7 @@ function offloadNote(d) {
   if (s.offload === 'barrow') {
     const loads = L.barrowLoads(s.volume);
     const big = s.volume > CONFIG.barrowWarnM3;
-    const waiting = P.waitingPerHour == null ? tbd('waiting-time rate') : `${money(P.waitingPerHour)} per hour`;
+    const waiting = P.waiting?.perBlock == null ? tbd('waiting-time rate') : `€${P.waiting.perBlock} per ${P.waiting.blockMinutes} minutes`;
     return `<div class="note-warn${big ? ' strong' : ''}" role="status"><p>
       ${big ? `<strong>${m3(s.volume)} is a lot to move by wheelbarrow.</strong> ` : '<strong>Concrete is heavy.</strong> '}
       ${m3(s.volume)} is about ${loads} wheelbarrow loads${big ? ', so you will need a large team. For this much, a pump is usually the better choice' : ''}.
