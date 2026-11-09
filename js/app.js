@@ -301,6 +301,18 @@ function summary(d) {
     <div class="help-box"><strong style="font-size:15px">Need help?</strong><a href="${C.orderPhoneHref}">Call ${esc(C.orderPhone)}</a><span class="small-grey">${esc(C.hours)}</span></div>`;
 }
 
+// One reassurance line per step: strong, lasting, certified (James, 9 Nov).
+const TRUST = {
+  1: ['pour', 'Every mix meets exactly the same certified standards as traditional concrete.'],
+  2: ['truck', 'Certified for high-rise, tunnels and bridges, so it is more than ready for your job.'],
+  3: ['engineer', 'Just as strong and built to last. Our technical team checks every order.'],
+  4: ['pour', 'No compromise on strength, and 63–80% less CO₂ than reference concrete.'],
+};
+const trustLine = (step) => {
+  const [img, text] = TRUST[step];
+  return `<p class="trust-line"><img src="img/${img}.jpg" alt="" width="56" height="56" loading="lazy"><span>${text}</span></p>`;
+};
+
 function buyView(d) {
   if (s.done) {
     return `<div class="card done" role="status">
@@ -308,6 +320,7 @@ function buyView(d) {
       <h3 id="step-title" tabindex="-1">Order received</h3>
       <p>Thanks, ${esc(s.name.trim().split(' ')[0] || 'there')}. A planner will call you to confirm the mix, volume and your ${esc(d.slotLabel)} slot. Only the confirmed amount is charged.</p>
       <p style="font-size:15px;color:var(--grey-text)">${esc(d.mixLabel)} · ${m3(s.volume)} · estimate ${money(d.price.total)} ${VAT}</p>
+      <p class="trust-line" style="text-align:left"><img src="img/truck.jpg" alt="" width="56" height="56" loading="lazy"><span>You're getting certified concrete, made to the same standards as traditional concrete, from a local Amsterdam business.</span></p>
       <p class="preview-note">Preview only: no card was charged. The request is saved in this browser and shows in the <a href="planner.html">planner inbox</a>.</p>
       <button type="button" class="btn btn-outline btn-sm" data-act="reset" data-key="reset">Start a new order</button>
     </div>`;
@@ -321,6 +334,7 @@ function buyView(d) {
         <span class="step-count">Step ${s.step} of 4</span>
       </div>
       ${body}
+      ${trustLine(s.step)}
       <div class="stepbar" id="stepbar">${stepbar(d)}</div>
     </div>
     <aside class="summary on-dark" id="summary" aria-label="Price summary">${summary(d)}</aside>

@@ -287,3 +287,8 @@ input[type=range] { flex: 1 1 auto; accent-color: var(--ink); height: 32px; min-
 .how-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .trade { background: linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.8) 60%, rgba(0,0,0,.55) 100%), url('../img/engineer.jpg') center 30% / cover no-repeat, var(--black); }
 .photo-panel { background: linear-gradient(180deg, rgba(0,0,0,.82), rgba(0,0,0,.92)), url('../img/truck.jpg') center / cover no-repeat, var(--black); }
+
+/* Reassurance line in each order step */
+.trust-line { display: flex; align-items: center; gap: 12px; margin: 0; padding: 10px 12px; border-radius: var(--radius); background: var(--section); font-size: 14px; line-height: 1.45; color: #333; }
+.trust-line img { width: 56px; height: 56px; flex: 0 0 56px; border-radius: 10px; object-fit: cover; }
+.trust-line span::before { content: '✓ '; font-weight: 700; color: var(--ok); }
