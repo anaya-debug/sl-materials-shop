@@ -17,7 +17,8 @@ const m3 = (n) => n.toFixed(1) + ' m³';
 
 function fillPage() {
   const slots = {
-    fromPrice: orTbd(P.fromPricePerM3, 'from price', (v) => '€' + v),
+    fromPrice: orTbd(P.fromPricePerM3, 'from price', (v) => money(L.withVat(v, P.vatPct))),
+    fromPriceEx: orTbd(P.fromPricePerM3, 'from price', (v) => '€' + v),
     quoteTime: orTbd(CONFIG.responseTimes.quote, 'response time'),
     tradeTerms: orTbd(C.tradePaymentTerms, 'payment terms'),
     radius: orTbd(CONFIG.delivery.radiusKm, 'radius'),
@@ -41,7 +42,7 @@ function fillPage() {
 const fresh = (tab = 'buy') => ({
   tab, step: 1, mode: 'project', project: null, code: null,
   volume: VOL.default, showCalc: false, len: '', wid: '', dep: '100',
-  postcode: '', offload: null, barrowOk: false, slump: 'S3', stone: 'std', fibres: false,
+  customer: 'private', postcode: '', offload: null, barrowOk: false, slump: 'S3', stone: 'std', fibres: false,
   showSlumpHelp: false, showStoneHelp: false,
   day: null, time: 'am', name: '', phone: '', email: '', notes: '', terms: false,
   done: false, quoteSent: false, callbackSent: false,
@@ -57,7 +58,11 @@ const days = (() => {
   const late = L.pastCutoff(now, CONFIG.delivery.nextDayCutoff);
   return list.filter((d) => !(late && d.key === tKey)).slice(0, CONFIG.delivery.daysShown);
 })();
-const VAT = 'excl. BTW';
+// Private customers see prices incl. BTW (Dutch consumer rules); business customers see them excl. BTW.
+const isPrivate = () => s.customer !== 'business';
+const VATP = P.vatPct;
+const pm = (n) => money(isPrivate() ? L.withVat(n, VATP) : n);
+const vatLabel = () => (isPrivate() ? 'incl. BTW' : 'excl. BTW');
 
 function derive() {
   const isProject = s.mode === 'project';
@@ -127,7 +132,7 @@ function offloadNote(d) {
   if (s.offload === 'barrow') {
     const loads = L.barrowLoads(s.volume);
     const big = s.volume > CONFIG.barrowWarnM3;
-    const waiting = P.waiting?.perBlock == null ? tbd('waiting-time rate') : `€${P.waiting.perBlock} per ${P.waiting.blockMinutes} minutes`;
+    const waiting = P.waiting?.perBlock == null ? tbd('waiting-time rate') : `${pm(P.waiting.perBlock)} ${vatLabel()} per ${P.waiting.blockMinutes} minutes`;
     return `<div class="note-warn${big ? ' strong' : ''}" role="status"><p>
       ${big ? `<strong>${m3(s.volume)} is a lot to move by wheelbarrow.</strong> ` : '<strong>Concrete is heavy.</strong> '}
       ${m3(s.volume)} is about ${loads} wheelbarrow loads${big ? ', so you will need a large team. For this much, a pump is usually the better choice' : ''}.
@@ -146,7 +151,7 @@ function offloadNote(d) {
 }
 
 function step2(d) {
-  const stoneSub = (x) => (P.stoneAddPerM3[x.id] ? `+${money(P.stoneAddPerM3[x.id])} per m³` : esc(x.sub));
+  const stoneSub = (x) => (P.stoneAddPerM3[x.id] ? `+${pm(P.stoneAddPerM3[x.id])} per m³` : esc(x.sub));
   return `
     <h3 class="sr-only" id="step-title" tabindex="-1">Delivery and volume</h3>
     <div class="chosen"><span><strong>${esc(d.mixLabel)}</strong>${d.mixSource ? ' · ' + esc(d.mixSource) : ''}</span><button type="button" class="link-btn" data-act="goto1" data-key="goto1" style="padding:8px 10px">Change</button></div>
@@ -203,7 +208,7 @@ function step2(d) {
     </div>
 
     <label class="check"><input type="checkbox" data-field="fibres" data-key="fibres" ${s.fibres ? 'checked' : ''}>
-      <span><strong>Add fibres</strong> (${orTbd(P.fibresPerM3, 'fibre price', money)} per m³). Helps limit shrinkage cracks, useful over underfloor heating.</span></label>`;
+      <span><strong>Add fibres</strong> (${orTbd(P.fibresPerM3, 'fibre price', pm)} per m³ ${vatLabel()}). Helps limit shrinkage cracks, useful over underfloor heating.</span></label>`;
 }
 
 function step3() {
@@ -253,7 +258,7 @@ function step4(d) {
       <strong style="font-size:16px">You only pay for what's confirmed</strong>
       <span style="line-height:1.55;color:#333">We place a temporary hold on your card to reserve the slot. A planner calls to confirm, then we charge only the final agreed amount. The hold includes a ${P.contingencyPct}% allowance for small changes on site or extra waiting time. Anything not used is released within 24 hours of delivery.</span>
       <div class="hold-table">
-        <span>Order estimate, ${VAT}</span><span class="num">${money(d.price.total)}</span>
+        <span>Order total, incl. BTW</span><span class="num">${money(d.price.totalIncl)}</span>
         <span>${P.contingencyPct}% allowance</span><span class="num">${money(d.price.contingency)}</span>
         <strong>Amount held</strong><strong class="num">${money(d.price.hold)}</strong>
       </div>
@@ -265,7 +270,7 @@ function stepbar(d) {
   return `
     ${s.step > 1 ? `<button type="button" class="btn btn-outline back" data-act="back" data-key="back">Back</button>` : ''}
     <span class="step-hint" id="step-hint" aria-live="polite">${s.step === 1 && d.check.ok ? `${esc(d.mixLabel)} selected. ` : ''}${esc(d.check.hint)}</span>
-    <span class="mini-total" aria-hidden="true"><span>Estimate ${VAT}</span><strong>${money(d.price.total)}</strong></span>
+    <span class="mini-total" aria-hidden="true"><span>Estimate ${vatLabel()}</span><strong>${pm(d.price.total)}</strong></span>
     <button type="button" class="btn btn-green next ${s.step === 1 ? 'solo' : ''}" data-act="next" data-key="next" aria-describedby="step-hint" ${d.check.ok ? '' : 'disabled'}>${s.step === 4 ? 'Confirm and hold card' : 'Continue'}</button>`;
 }
 
@@ -275,7 +280,7 @@ function summary(d) {
     if (l.state === 'included') return 'Included';
     if (l.state === 'onConfirm') return 'On confirmation';
     if (l.state === 'tbd') return tbd(fallback);
-    return money(l.amount);
+    return pm(l.amount);
   };
   const line = Object.fromEntries(d.price.lines.map((l) => [l.key, l]));
   const pl = P.partLoad;
@@ -287,7 +292,7 @@ function summary(d) {
   const sat = line.saturday.state !== 'none';
   const deliveryLabel = `Delivery (${tr} truck${tr > 1 ? 's' : ''}${sat ? ', Saturday' : ''})`;
   const deliveryValue = !sat ? show(line.delivery, 'rule to agree')
-    : line.saturday.state === 'priced' && line.delivery.state === 'priced' ? money(line.delivery.amount + line.saturday.amount)
+    : line.saturday.state === 'priced' && line.delivery.state === 'priced' ? pm(line.delivery.amount + line.saturday.amount)
     : `${show(line.delivery, 'rule to agree')} ${tbd('+ surcharge')}`;
   const rows = [
     [`${esc(d.mixLabel)} · ${m3(s.volume)}`, show(line.concrete)],
@@ -297,12 +302,22 @@ function summary(d) {
     [plLabel, show(line.partLoad, 'to agree')],
     [deliveryLabel, deliveryValue],
   ];
+  const totals = isPrivate()
+    ? `<div class="total-row"><span>Estimated total, incl. BTW</span><strong>${money(d.price.totalIncl)}</strong></div>
+       <p class="small-grey">Includes ${money(d.price.vat)} BTW (${VATP}%).</p>`
+    : `<dl class="price-lines vat-lines"><dt>Subtotal excl. BTW</dt><dd>${money(d.price.total)}</dd><dt>BTW ${VATP}%</dt><dd>${money(d.price.vat)}</dd></dl>
+       <div class="total-row"><span>Estimated total, incl. BTW</span><strong>${money(d.price.totalIncl)}</strong></div>`;
   return `
-    <h3>Your price</h3>
+    <div class="sum-head"><h3>Your price</h3>
+      <div class="seg-group cust-toggle" role="group" aria-label="Show prices for">
+        ${pressBtn('seg', 'customer', 'private', isPrivate(), 'Private')}
+        ${pressBtn('seg', 'customer', 'business', !isPrivate(), 'Business')}
+      </div></div>
+    <p class="small-grey" style="margin-top:-4px">Prices ${vatLabel()}.</p>
     <dl class="price-lines">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
-    <div class="total-row"><span>Estimated total, ${VAT}</span><strong>${money(d.price.total)}</strong></div>
+    ${totals}
     ${tr > 1 ? `<p class="small-grey">${m3(s.volume)} goes as ${tr} trucks of ${m3(d.price.perTruck)}.</p>` : ''}
-    <p class="small-grey">Delivered from our Zaandam plant. BTW added at checkout. Preview prices: fibres, part-load and delivery charges are suggestions for the team to agree.</p>
+    <p class="small-grey">Delivered from our Zaandam plant. Preview prices: fibres, part-load and delivery charges are suggestions for the team to agree.</p>
     <div class="help-box"><strong style="font-size:15px">Need help?</strong><a href="${C.orderPhoneHref}">Call ${esc(C.orderPhone)}</a><span class="small-grey">${esc(C.hours)}</span></div>`;
 }
 
@@ -324,7 +339,7 @@ function buyView(d) {
       <div class="tick"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div>
       <h3 id="step-title" tabindex="-1">Order received</h3>
       <p>Thanks, ${esc(s.name.trim().split(' ')[0] || 'there')}. A planner will call you to confirm the mix, volume and your ${esc(d.slotLabel)} slot. Only the confirmed amount is charged.</p>
-      <p style="font-size:15px;color:var(--grey-text)">${esc(d.mixLabel)} · ${m3(s.volume)} · estimate ${money(d.price.total)} ${VAT}</p>
+      <p style="font-size:15px;color:var(--grey-text)">${esc(d.mixLabel)} · ${m3(s.volume)} · estimate ${money(d.price.totalIncl)} incl. BTW</p>
       <p class="trust-line" style="text-align:left"><img src="img/truck.jpg" alt="" width="56" height="56" loading="lazy"><span>You're getting certified concrete, made to the same standards as traditional concrete, from a local Amsterdam business.</span></p>
       <p class="preview-note">Preview only: no card was charged. The request is saved in this browser and shows in the <a href="planner.html">planner inbox</a>.</p>
       <button type="button" class="btn btn-outline btn-sm" data-act="reset" data-key="reset">Start a new order</button>

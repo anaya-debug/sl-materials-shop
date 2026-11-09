@@ -44,11 +44,14 @@ test('price: stone size and fibres per m³', () => {
   assert.equal(total({ volume: 2, fibres: true }), base + 16);
 });
 
-test('price: hold adds the 15% allowance', () => {
+test('price: BTW and the hold (always incl. BTW, plus the 15% allowance)', () => {
   const p = L.priceOrder({ volume: 2 }, P);
-  assert.equal(p.total, 545);
-  assert.equal(p.contingency, 81.75);
-  assert.equal(p.hold, 626.75);
+  assert.equal(p.total, 545);          // excl. BTW
+  assert.equal(p.vat, 114.45);         // 21%
+  assert.equal(p.totalIncl, 659.45);
+  assert.equal(p.contingency, 98.92);
+  assert.equal(p.hold, 758.37);
+  assert.equal(L.withVat(120, 21), 145.2);
 });
 
 test('price: unagreed extras are flagged, not counted', () => {

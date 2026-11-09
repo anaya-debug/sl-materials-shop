@@ -292,3 +292,10 @@ input[type=range] { flex: 1 1 auto; accent-color: var(--ink); height: 32px; min-
 .trust-line { display: flex; align-items: center; gap: 12px; margin: 0; padding: 10px 12px; border-radius: var(--radius); background: var(--section); font-size: 14px; line-height: 1.45; color: #333; }
 .trust-line img { width: 56px; height: 56px; flex: 0 0 56px; border-radius: 10px; object-fit: cover; }
 .trust-line span::before { content: '✓ '; font-weight: 700; color: var(--ok); }
+
+/* Private / Business price switch in the price box */
+.sum-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.cust-toggle { background: #262626; border-radius: var(--pill); padding: 3px; }
+.cust-toggle .seg { background: transparent; color: var(--grey-soft); border: 0; min-height: 36px; padding: 6px 14px; font-size: 14px; }
+.cust-toggle .seg[aria-pressed="true"] { background: var(--green); color: var(--on-green); }
+.vat-lines { border-top: 1px solid #333; padding-top: 10px; }

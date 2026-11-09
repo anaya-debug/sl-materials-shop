@@ -3,7 +3,7 @@
 // whole flow locally. A real backend replaces load/save later; the rest stays.
 
 import { CONFIG } from './config.js';
-import { nextDeliveryDays, formatEUR, round2, priceOrder } from './logic.js';
+import { nextDeliveryDays, formatEUR, round2, priceOrder, withVat } from './logic.js';
 
 const KEY = 'sl-shop-orders-v2'; // v2: prices from the 9 Nov review
 
@@ -51,9 +51,10 @@ export function counts(orders) {
 export function customerMessage(order) {
   const name = (order.name || '').trim() || 'customer';
   const sign = `SL Materials Planning, ${CONFIG.contact.orderPhone}`;
-  const price = formatEUR(order.estimate, CONFIG.locale);
+  // estimate is stored excl. BTW; customers are told the price incl. BTW.
+  const price = formatEUR(withVat(order.estimate, CONFIG.pricing.vatPct), CONFIG.locale);
   if (order.status === 'confirmed') {
-    return `Dear ${name}, your concrete delivery is confirmed for ${slotText(order.slot)}: ${order.mix}, ${order.volume.toFixed(1)} m³. Final price ${price} excl. BTW. Please complete payment here: [payment link]. ${sign}`;
+    return `Dear ${name}, your concrete delivery is confirmed for ${slotText(order.slot)}: ${order.mix}, ${order.volume.toFixed(1)} m³. Final price ${price} incl. BTW. Please complete payment here: [payment link]. ${sign}`;
   }
   if (order.status === 'offered') {
     return `Dear ${name}, unfortunately we are unable to deliver on ${slotText(order.slot)}. We can offer ${slotText(order.offeredSlot)} instead. Please confirm this new time here: [link], or call us to discuss. ${sign}`;
@@ -107,7 +108,7 @@ export function sampleOrders(today = new Date()) {
   const mk = (id, s, who, name, pc, contact, job, note, mix, volume, offload, estimate) => ({
     id, createdAt: at, updatedAt: at, source: 'sample', status: 'waiting', offeredSlot: null,
     slot: s, who, name, phone: '', email: '', contact, pc, job, note, mix, volume, offload,
-    stone: id === 'sample-d' ? '2–8 mm' : '4–32 mm', consistency: id === 'sample-d' ? 'S4' : 'S3', fibres: false, estimate, hold: round2(estimate * (1 + CONFIG.pricing.contingencyPct / 100)),
+    stone: id === 'sample-d' ? '2–8 mm' : '4–32 mm', consistency: id === 'sample-d' ? 'S4' : 'S3', fibres: false, estimate, hold: round2(withVat(estimate, CONFIG.pricing.vatPct) * (1 + CONFIG.pricing.contingencyPct / 100)),
   });
   return [
     { ...mk('sample-a', slot(0, 'am'), 'Homeowner', 'Anna', '1013', 'WhatsApp', 'Shed base', 'Gate 1.2 m wide', 'C20/25', 2.5, 'Wheelbarrow', est(2.5)), phone: '+31 6 12 34 56 78' },

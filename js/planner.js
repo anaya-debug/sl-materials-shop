@@ -63,7 +63,7 @@ function row(o) {
     <td class="desk" data-col="offload">${needsSLPump(o) || needsBarrowCheck(o) ? `<span class="pump-flag">${esc(o.offload)}</span>` : esc(o.offload)}</td>
     <td class="desk num" data-col="est">${money(o.estimate)}</td>
     <td data-col="status"><span class="badge badge-${o.status}">${st.label}</span></td>
-    <td data-col="facts"><span class="p-strong">${esc(o.mix)}</span><span>${o.volume.toFixed(1)} m³</span><span class="${needsSLPump(o) || needsBarrowCheck(o) ? 'pump-flag' : ''}">${esc(o.offload)}</span><span>${money(o.estimate)}</span>${extras ? `<span class="p-sub-line" style="flex-basis:100%">${esc(extras)}</span>` : ''}</td>
+    <td data-col="facts"><span class="p-strong">${esc(o.mix)}</span><span>${o.volume.toFixed(1)} m³</span><span class="${needsSLPump(o) || needsBarrowCheck(o) ? 'pump-flag' : ''}">${esc(o.offload)}</span><span>${money(o.estimate)} excl. BTW</span>${extras ? `<span class="p-sub-line" style="flex-basis:100%">${esc(extras)}</span>` : ''}</td>
     <td data-col="actions">${callNote}${actions}</td>
   </tr>`;
 }

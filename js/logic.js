@@ -2,6 +2,9 @@
 
 export const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
+// Add BTW to an amount excl. BTW.
+export const withVat = (n, pct) => round2(n * (1 + pct / 100));
+
 export function parseNum(v) {
   const n = parseFloat(String(v ?? '').trim().replace(',', '.'));
   return Number.isFinite(n) ? n : NaN;
@@ -116,9 +119,12 @@ export function priceOrder({ volume, stone = 'std', fibres = false, offload = nu
   if (p.deliveryPerTruck == null) add('delivery', 'tbd', null, { trucks });
   else add('delivery', 'priced', p.deliveryPerTruck * trucks, { trucks });
 
+  // total is excl. BTW. The card is always charged incl. BTW, so the hold is worked out on totalIncl.
   const total = round2(lines.reduce((sum, l) => sum + (l.state === 'priced' ? l.amount : 0), 0));
-  const contingency = round2(total * p.contingencyPct / 100);
-  return { lines, total, contingency, hold: round2(total + contingency), trucks, perTruck };
+  const vat = round2(total * (p.vatPct ?? 0) / 100);
+  const totalIncl = round2(total + vat);
+  const contingency = round2(totalIncl * p.contingencyPct / 100);
+  return { lines, total, vat, totalIncl, contingency, hold: round2(totalIncl + contingency), trucks, perTruck };
 }
 
 // ---- Delivery rules ----

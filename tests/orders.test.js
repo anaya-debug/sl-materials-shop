@@ -77,7 +77,7 @@ test('customer messages carry the shop price, never a planner price', () => {
   assert.equal(O.customerMessage(o), '');
   const conf = O.customerMessage(O.applyAction(o, 'confirm'));
   assert.match(conf, /^Dear Joost Bakker,/);
-  assert.match(conf, /€885\.00 excl\. BTW/);
+  assert.match(conf, /€1,070\.85 incl\. BTW/); // 885 + 21%
   const off = O.customerMessage(O.applyAction(o, 'offer', { slot: slot('2026-11-12', 'pm') }));
   assert.match(off, /offer Wed 11 Nov · 12:00–16:00 instead/);
   assert.doesNotMatch(off, /\b(AM|PM)\b/);

@@ -12,6 +12,8 @@ export const CONFIG = {
     fromPricePerM3: 120,       // "From ... per m³" on the homepage
     // Extra per m³ by stone size.
     stoneAddPerM3: { std: 0, mid: 8.5, fine: 14 },
+    // BTW (Dutch VAT). Private customers see prices including it; business customers see it added.
+    vatPct: 21,
     // Allowance added to the card hold for small changes on site or extra waiting time.
     contingencyPct: 15,
 
