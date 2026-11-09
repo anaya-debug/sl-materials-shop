@@ -20,13 +20,27 @@ test('samples: five waiting orders, dated after today, no Sundays or Saturdays',
   }
 });
 
-test('samples: estimates match the mock-up', () => {
+test('samples: estimates use the full shop price (part load and delivery included)', () => {
   const est = Object.fromEntries(O.sampleOrders().map((o) => [o.id, o.estimate]));
-  assert.equal(est['sample-a'], 338.13);
-  assert.equal(est['sample-b'], 811.5);
-  assert.equal(est['sample-c'], 202.88);
-  assert.equal(est['sample-d'], 447.75);
-  assert.equal(est['sample-e'], 608.63);
+  assert.equal(est['sample-a'], 587.5);  // 2.5 m³: 300 + 5.5 × 35 + 95
+  assert.equal(est['sample-b'], 885);    // 6 m³: 720 + 2 × 35 + 95
+  assert.equal(est['sample-c'], 502.5);
+  assert.equal(est['sample-d'], 672);    // 3 m³ fine stone, pump priced later
+  assert.equal(est['sample-e'], 757.5);
+});
+
+test('SL pump requests: flagged and editable by the planner', () => {
+  const d = O.sampleOrders().find((o) => o.id === 'sample-d');
+  assert.equal(O.needsSLPump(d), true);
+  assert.equal(O.needsSLPump(O.sampleOrders()[0]), false);
+  const booked = O.setPump(d, { status: 'booked', note: 'Pompverhuur NH, 7:30' });
+  assert.deepEqual(booked.pump, { status: 'booked', note: 'Pompverhuur NH, 7:30' });
+  assert.equal(O.setPump(booked, { note: 'changed' }).pump.status, 'booked');
+  assert.equal(d.pump, undefined, 'original is not changed');
+});
+
+test('tomorrow key', () => {
+  assert.equal(O.tomorrowKey(new Date(2026, 10, 30)), '2026-12-01');
 });
 
 test('actions: confirm, offer, decline and undo', () => {
@@ -56,7 +70,7 @@ test('customer messages carry the shop price, never a planner price', () => {
   assert.equal(O.customerMessage(o), '');
   const conf = O.customerMessage(O.applyAction(o, 'confirm'));
   assert.match(conf, /^Hi Joost,/);
-  assert.match(conf, /€811\.50 ex VAT/);
+  assert.match(conf, /€885\.00 excl\. BTW/);
   const off = O.customerMessage(O.applyAction(o, 'offer', { slot: slot('2026-11-12', 'pm') }));
   assert.match(off, /Wed 11 Nov · PM instead/);
   assert.match(O.customerMessage(O.applyAction(o, 'decline')), /hold has been released/);
@@ -85,6 +99,6 @@ test('storage: bad or blocked storage falls back to samples', () => {
   const broken = { getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); }, removeItem: () => {} };
   assert.equal(O.loadOrders(broken).length, 5);
   assert.equal(O.saveOrders([], broken), false);
-  const junk = memoryStorage(); junk.setItem('sl-shop-orders-v1', '{oops');
+  const junk = memoryStorage(); junk.setItem('sl-shop-orders-v2', '{oops');
   assert.equal(O.loadOrders(junk).length, 5);
 });

@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 import { formatEUR, nextDeliveryDays } from './logic.js';
-import { STATUSES, applyAction, counts, customerMessage, loadOrders, saveOrders, resetOrders, slotText, slotSortKey } from './orders.js';
+import { STATUSES, applyAction, counts, customerMessage, loadOrders, saveOrders, resetOrders, slotText, slotSortKey, needsSLPump, setPump, tomorrowKey } from './orders.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => formatEUR(n, CONFIG.locale);
@@ -12,9 +12,28 @@ const FILTER_LABELS = { all: 'All', waiting: 'Waiting', confirmed: 'Confirmed', 
 
 // ---------- Rendering ----------
 
+function pumpBox(o) {
+  if (!needsSLPump(o)) return '';
+  const p = o.pump || { status: 'todo', note: '' };
+  return `<div class="pump-box ${p.status === 'booked' ? 'is-booked' : ''}">
+    <span class="pump-head">${p.status === 'booked' ? 'Pump booked' : 'SL to arrange pump'}</span>
+    <label class="sr-only" for="pump-st-${esc(o.id)}">Pump status</label>
+    <select id="pump-st-${esc(o.id)}" class="input pump-select" data-pump="status" data-id="${esc(o.id)}" data-key="pump-st:${esc(o.id)}">
+      <option value="todo" ${p.status !== 'booked' ? 'selected' : ''}>To arrange</option>
+      <option value="booked" ${p.status === 'booked' ? 'selected' : ''}>Booked</option>
+    </select>
+    <label class="sr-only" for="pump-nt-${esc(o.id)}">Pump details</label>
+    <input id="pump-nt-${esc(o.id)}" class="input pump-note" data-pump="note" data-id="${esc(o.id)}" data-key="pump-nt:${esc(o.id)}" placeholder="Pump company, time, price agreed" value="${esc(p.note)}">
+  </div>`;
+}
+
 function row(o) {
   const st = STATUSES[o.status];
   const isNew = o.source === 'shop' && o.status === 'waiting';
+  const isTomorrow = o.slot?.key === tomorrowKey() && o.status !== 'declined';
+  const tel = o.phone ? `<a href="tel:${esc(o.phone.replace(/[^\d+]/g, ''))}">${esc(o.phone)}</a>` : '';
+  const callNote = isTomorrow && o.status === 'waiting'
+    ? `<p class="call-note">Delivery is tomorrow: phone ${esc(o.name || o.who)}${tel ? ' on ' + tel : ''} to agree any change.</p>` : '';
   const contact = o.phone
     ? `<a href="tel:${esc(o.phone.replace(/[^\d+]/g, ''))}">${esc(o.phone)}</a>`
     : esc(o.contact);
@@ -30,17 +49,17 @@ function row(o) {
         <button type="button" class="link-btn" data-act="message" data-id="${esc(o.id)}" data-key="message:${esc(o.id)}">Show customer message</button>
         <button type="button" class="link-btn" data-act="undo" data-id="${esc(o.id)}" data-key="undo:${esc(o.id)}">Undo</button>
       </div>`;
-  return `<tr class="${isNew ? 'is-new' : ''}">
-    <td data-col="slot">${esc(slotText(o.slot))}${offered}</td>
+  return `<tr class="${isNew ? 'is-new' : ''} ${isTomorrow ? 'is-tomorrow' : ''}">
+    <td data-col="slot">${isTomorrow ? '<span class="tomorrow-tag">Tomorrow</span>' : ''}${esc(slotText(o.slot))}${offered}</td>
     <td data-col="customer"><span class="p-strong">${esc(o.who)}</span>${isNew ? '<span class="new-tag">New</span>' : ''}<span class="p-sub-line">${esc(o.pc)} · ${contact}</span></td>
-    <td data-col="job"><span>${esc(o.job)}</span>${o.note ? `<span class="p-sub-line">${esc(o.note)}</span>` : ''}</td>
+    <td data-col="job"><span>${esc(o.job)}</span>${o.note ? `<span class="p-sub-line">${esc(o.note)}</span>` : ''}${pumpBox(o)}</td>
     <td class="desk p-strong" data-col="mix">${esc(o.mix)}${extras ? `<span class="p-sub-line" style="font-weight:400">${esc(extras)}</span>` : ''}</td>
     <td class="desk num" data-col="vol">${o.volume.toFixed(1)} m³</td>
-    <td class="desk" data-col="offload">${esc(o.offload)}</td>
+    <td class="desk" data-col="offload">${needsSLPump(o) ? `<span class="pump-flag">${esc(o.offload)}</span>` : esc(o.offload)}</td>
     <td class="desk num" data-col="est">${money(o.estimate)}</td>
     <td data-col="status"><span class="badge badge-${o.status}">${st.label}</span></td>
-    <td data-col="facts"><span class="p-strong">${esc(o.mix)}</span><span>${o.volume.toFixed(1)} m³</span><span>${esc(o.offload)}</span><span>${money(o.estimate)}</span>${extras ? `<span class="p-sub-line" style="flex-basis:100%">${esc(extras)}</span>` : ''}</td>
-    <td data-col="actions">${actions}</td>
+    <td data-col="facts"><span class="p-strong">${esc(o.mix)}</span><span>${o.volume.toFixed(1)} m³</span><span class="${needsSLPump(o) ? 'pump-flag' : ''}">${esc(o.offload)}</span><span>${money(o.estimate)}</span>${extras ? `<span class="p-sub-line" style="flex-basis:100%">${esc(extras)}</span>` : ''}</td>
+    <td data-col="actions">${callNote}${actions}</td>
   </tr>`;
 }
 
@@ -49,6 +68,7 @@ function render() {
   const c = counts(orders);
   $('c-waiting').innerHTML = `<strong>${c.waiting}</strong> waiting`;
   $('c-confirmed').innerHTML = `<strong>${c.confirmed}</strong> confirmed`;
+  document.title = (c.waiting ? `(${c.waiting}) ` : '') + 'Planner inbox | SL Materials';
   document.querySelectorAll('[data-filter]').forEach((b) => {
     const f = b.dataset.filter;
     b.innerHTML = `${FILTER_LABELS[f]}<span class="n">${c[f]}</span>`;
@@ -114,8 +134,34 @@ $('reset').addEventListener('click', () => {
   render();
 });
 
-// New orders placed in the shop in another tab.
-window.addEventListener('storage', () => { orders = loadOrders(); render(); });
+// Pump status and notes: saved on change, without redrawing while typing.
+$('rows').addEventListener('change', (e) => {
+  const el = e.target.closest('[data-pump]');
+  if (!el) return;
+  const i = orders.findIndex((o) => o.id === el.dataset.id);
+  if (i < 0) return;
+  orders[i] = setPump(orders[i], { [el.dataset.pump]: el.value });
+  saveOrders(orders);
+  if (el.dataset.pump === 'status') render();
+});
+
+// New orders placed in the shop in another tab: refresh and show an alert.
+// (Live version: email or push notification to the planners.)
+function alertNew(o) {
+  const t = $('toast');
+  t.innerHTML = `<div class="t-head"><strong>New order · ${esc(slotText(o.slot))}</strong><button type="button" id="toast-close">Close</button></div><div class="t-msg">${esc(o.who)}, ${esc(o.pc)}: ${o.volume.toFixed(1)} m³ ${esc(o.mix)}, ${esc(o.offload)}.</div>`;
+  t.hidden = false;
+  $('toast-close').addEventListener('click', () => { t.hidden = true; });
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 12000);
+}
+window.addEventListener('storage', () => {
+  const known = new Set(orders.map((o) => o.id));
+  orders = loadOrders();
+  render();
+  const fresh = orders.filter((o) => !known.has(o.id));
+  if (fresh.length && !dialog.open) alertNew(fresh[fresh.length - 1]);
+});
 
 // ---------- Offer another time ----------
 

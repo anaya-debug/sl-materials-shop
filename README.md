@@ -22,6 +22,7 @@ npm test           # unit tests for price, volume, postcode, delivery days and s
 | `js/orders.js` | Order requests shared by shop and inbox: status changes, customer messages, sample data, storage |
 | `css/tokens.css` | Brand colours and type from sl-materials.nl |
 | `css/site.css` | Layout, mobile first |
+| `img/` | SL logo, icons and photos (taken from sl-materials.nl) |
 | `reference/` | The approved mock-ups (design-tool format, for reference only) |
 
 ## Not built yet
@@ -32,6 +33,10 @@ npm test           # unit tests for price, volume, postcode, delivery days and s
 - The inbox has no login yet. It must sit behind one before it goes on any public host.
 - Customer messages are shown as a preview only; sending (SMS / WhatsApp / email) and the payment link come later.
 - Payment provider (Mollie or Stripe).
-- Prices not set yet: see the `null` values in `js/config.js`.
+- Prices not set yet: see the `null` values in `js/config.js` (Saturday surcharge, waiting-time rate, SL pump hire).
+- Suggested prices to confirm with the team (marked SUGGESTED in `js/config.js`): fibres €8/m³,
+  part load €35 per m³ a truck is short of 8 m³, delivery €95 per truck.
+- New-order notifications for planners (email or push) need the live server; the preview shows an alert on the page.
+- Mix codes in `js/catalogue.js` to be checked with James.
 - Dutch translation.
 - Dutch public holidays are not yet excluded from delivery days.

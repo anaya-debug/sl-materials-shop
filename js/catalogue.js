@@ -29,7 +29,7 @@ export const OFFLOADS = [
   { id: 'chute', label: 'Straight from the truck', sub: 'Most common · poured from the chute', short: 'Chute' },
   { id: 'barrow', label: 'Wheelbarrow', sub: 'You barrow from the truck', short: 'Wheelbarrow' },
   { id: 'pumpown', label: 'Pump, I arrange it', sub: 'Your own pump on site', short: 'Own pump' },
-  { id: 'pumpsl', label: 'Pump, SL arranges it', sub: 'Priced on confirmation', short: 'Pump (SL)' },
+  { id: 'pumpsl', label: 'Pump, SL arranges it', sub: 'Charged separately · we get in touch', short: 'Pump (SL)' },
 ];
 
 export const CONSISTENCY = [

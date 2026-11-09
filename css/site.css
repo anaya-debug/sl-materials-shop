@@ -251,3 +251,29 @@ input[type=range] { flex: 1 1 auto; accent-color: var(--ink); height: 32px; min-
 .site-footer .wrap { display: flex; flex-direction: column; gap: 10px; }
 .site-footer a { color: var(--green); }
 @media (min-width: 700px) { .site-footer .wrap { flex-direction: row; justify-content: space-between; } }
+
+/* ---- Brand logo, photos, quality section, warnings (James review, 9 Nov) ---- */
+.brand-logo { display: block; height: 20px; width: auto; }
+.brand { padding: 6px 0; border-radius: 8px; }
+.brand:hover .shop-pill { background: #8BD31C; }
+@media (min-width: 900px) { .brand-logo { height: 23px; } }
+
+/* Hero: SL truck photo behind the text, darkened so white text stays readable. */
+.hero { background: linear-gradient(180deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.86) 55%, #000 100%), url('../img/truck.jpg') center 30% / cover no-repeat, var(--black); }
+@media (min-width: 900px) { .hero { background: linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.78) 50%, rgba(0,0,0,.5) 100%), url('../img/truck.jpg') center 35% / cover no-repeat, var(--black); } }
+
+.quality-grid { display: grid; gap: 24px; align-items: center; }
+.quality-photo { margin: 0; border-radius: var(--radius-lg); overflow: hidden; aspect-ratio: 4 / 3; background: var(--section); }
+.quality-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.quality-text { display: flex; flex-direction: column; gap: 14px; }
+.quality-points { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 14px; }
+.quality-points li { display: flex; flex-direction: column; gap: 2px; padding-left: 16px; border-left: 3px solid var(--green); }
+.quality-points span { color: var(--grey-text); line-height: 1.5; }
+@media (min-width: 860px) { .quality-grid { grid-template-columns: 5fr 6fr; gap: 48px; } }
+
+.note-warn { background: #FFF6E5; border: 1px solid #F0D9A8; border-radius: var(--radius); padding: 14px 16px; font-size: 15px; line-height: 1.55; display: flex; flex-direction: column; gap: 12px; }
+.note-warn.strong { background: #FDEBDD; border-color: #E9B48F; }
+.note-warn .check { font-weight: 600; }
+
+.faq a { font-weight: 600; }
+.site-footer a { color: var(--grey); }

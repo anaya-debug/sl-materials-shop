@@ -17,12 +17,13 @@ const m3 = (n) => n.toFixed(1) + ' m³';
 
 function fillPage() {
   const slots = {
-    fromPrice: orTbd(P.fromPricePerM3, 'from price', money),
+    fromPrice: orTbd(P.fromPricePerM3, 'from price', (v) => '€' + v),
     quoteTime: orTbd(CONFIG.responseTimes.quote, 'response time'),
     tradeTerms: orTbd(C.tradePaymentTerms, 'payment terms'),
     radius: orTbd(CONFIG.delivery.radiusKm, 'radius'),
   };
-  const hrefs = { ...C, tradeMail: 'mailto:' + C.orderEmail };
+  const tradeBody = 'Hello SL Materials,\n\nWe would like a price for the following job:\n\nCompany name:\nSite location / postcode:\nMix or strength class:\nVolume (m³):\nDates:\nOffloading (chute, pump, other):\n\nPhone number:\n';
+  const hrefs = { ...C, salesMail: 'mailto:' + C.salesEmail, tradeMail: `mailto:${C.salesEmail}?subject=${encodeURIComponent('Trade enquiry')}&body=${encodeURIComponent(tradeBody)}` };
   document.querySelectorAll('[data-slot]').forEach((el) => { el.innerHTML = slots[el.dataset.slot] ?? ''; });
   document.querySelectorAll('[data-text]').forEach((el) => { el.textContent = C[el.dataset.text] ?? ''; });
   document.querySelectorAll('[data-href]').forEach((el) => { el.href = hrefs[el.dataset.href] ?? '#'; });
@@ -40,14 +41,23 @@ function fillPage() {
 const fresh = (tab = 'buy') => ({
   tab, step: 1, mode: 'project', project: null, code: null,
   volume: VOL.default, showCalc: false, len: '', wid: '', dep: '100',
-  postcode: '', offload: null, slump: 'S3', stone: 'std', fibres: false,
+  postcode: '', offload: null, barrowOk: false, slump: 'S3', stone: 'std', fibres: false,
   showSlumpHelp: false, showStoneHelp: false,
   day: null, time: 'am', name: '', phone: '', email: '', notes: '', terms: false,
   done: false, quoteSent: false, callbackSent: false,
 });
 
 let s = fresh();
-const days = L.nextDeliveryDays(new Date(), CONFIG.delivery.daysShown, CONFIG.locale);
+// After the cut-off, tomorrow is no longer offered.
+const days = (() => {
+  const now = new Date();
+  const list = L.nextDeliveryDays(now, CONFIG.delivery.daysShown + 1, CONFIG.locale);
+  const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+  const tKey = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+  const late = L.pastCutoff(now, CONFIG.delivery.nextDayCutoff);
+  return list.filter((d) => !(late && d.key === tKey)).slice(0, CONFIG.delivery.daysShown);
+})();
+const VAT = 'excl. BTW';
 
 function derive() {
   const isProject = s.mode === 'project';
@@ -59,9 +69,10 @@ function derive() {
   const dayObj = days.find((d) => d.key === s.day);
   const timeText = { am: 'morning', pm: 'afternoon', any: 'any time' }[s.time];
   const price = L.priceOrder({ volume: s.volume, stone: s.stone, fibres: s.fibres, offload: s.offload, saturday: !!dayObj?.saturday }, P);
-  const check = L.checkStep(s.step, s, { hasMix, inArea: pc.inArea, dayChosen: !!dayObj });
+  const pumpOk = L.canPump(s.slump, CONFIG.pumpableConsistency);
+  const check = L.checkStep(s.step, s, { hasMix, inArea: pc.inArea, dayChosen: !!dayObj, pumpOk });
   return {
-    isProject, proj, hasMix, mixLabel, pc, calc, dayObj, price, check,
+    isProject, proj, hasMix, mixLabel, pc, calc, dayObj, price, check, pumpOk,
     mixWhy: proj ? (proj.mix ? proj.why + ' The planner double-checks it.' : 'A planner will recommend the right mix when they call.') : '',
     mixSource: isProject ? (proj ? proj.label : '') : 'Chosen by mix code',
     slotLabel: dayObj ? `${dayObj.dow} ${dayObj.dm}, ${timeText}` : 'not chosen',
@@ -111,6 +122,29 @@ function calcOut(d) {
     ${c.tooBig ? `<span class="msg msg-bad" style="flex-basis:100%">Over ${VOL.max} m³. <a href="#quote-tool" data-act="to-quote">Request a quote</a> for larger pours.</span>` : ''}`;
 }
 
+function offloadNote(d) {
+  const mins = CONFIG.freeUnloadMinutes;
+  if (s.offload === 'barrow') {
+    const loads = L.barrowLoads(s.volume);
+    const big = s.volume > CONFIG.barrowWarnM3;
+    const waiting = P.waitingPerHour == null ? tbd('waiting-time rate') : `${money(P.waitingPerHour)} per hour`;
+    return `<div class="note-warn${big ? ' strong' : ''}" role="status"><p>
+      ${big ? `<strong>${m3(s.volume)} is a lot to move by wheelbarrow.</strong> ` : '<strong>Concrete is heavy.</strong> '}
+      ${m3(s.volume)} is about ${loads} wheelbarrow loads${big ? ', so you will need a large team. For this much, a pump is usually the better choice' : ''}.
+      The truck can wait up to ${mins} minutes to unload; after that, waiting time is charged at ${waiting}.</p>
+      <label class="check"><input type="checkbox" data-field="barrowOk" data-key="barrowOk" ${s.barrowOk ? 'checked' : ''}>
+        <span>I'll have enough people and wheelbarrows to unload within ${mins} minutes, and I accept waiting-time charges after that.</span></label>
+    </div>`;
+  }
+  if (s.offload === 'pumpsl') {
+    return `<div class="note-green" role="status"><strong>We'll arrange the pump.</strong> Pump hire is charged separately from the concrete. A planner will be in touch with the price before anything is booked.</div>`;
+  }
+  if (s.offload === 'pumpown') {
+    return `<div class="note-green" role="status">Pumping needs a fluid mix, so choose S3 or S4 below. Your pump should be set up when the truck arrives.</div>`;
+  }
+  return '';
+}
+
 function step2(d) {
   const stoneSub = (x) => (P.stoneAddPerM3[x.id] ? `+${money(P.stoneAddPerM3[x.id])} per m³` : esc(x.sub));
   return `
@@ -147,12 +181,18 @@ function step2(d) {
     <div class="field-group" role="group" aria-labelledby="off-l">
       <span class="label" id="off-l">Offloading method</span>
       <div class="opts opts-4">${OFFLOADS.map((o) => opt('offload', o.id, s.offload === o.id, o.label, esc(o.sub))).join('')}</div>
-      <p class="hint">The truck must be able to reach the site and the ground must take its weight. Narrow street or canal-side? Choose a pump or tell us in the notes.</p>
+      <div id="off-note">${offloadNote(d)}</div>
+      <p class="hint">Every delivery includes up to ${CONFIG.freeUnloadMinutes} minutes to unload. The truck must be able to reach the site and the ground must take its weight. Narrow street or canal-side? Choose a pump or tell us in the notes.</p>
     </div>
 
     <div class="field-group" role="group" aria-labelledby="sl-l">
       <div style="display:flex;align-items:center;gap:10px"><span class="label" id="sl-l">Consistency</span><button type="button" class="link-btn" style="font-weight:400;font-size:14px" data-toggle="showSlumpHelp" data-key="t-slump" aria-expanded="${s.showSlumpHelp}">What's this?</button></div>
-      <div class="opts opts-2 opts-4">${CONSISTENCY.map((x) => opt('slump', x.id, s.slump === x.id, x.label, esc(x.sub))).join('')}</div>
+      <div class="opts opts-2 opts-4">${CONSISTENCY.map((x) => {
+        const blocked = L.isPump(s.offload) && !L.canPump(x.id, CONFIG.pumpableConsistency);
+        return blocked
+          ? pressBtn('opt', 'slump', x.id, false, `<span class="opt-title">${esc(x.label)}</span><span class="opt-sub">Can't be pumped</span>`, 'disabled')
+          : opt('slump', x.id, s.slump === x.id, x.label, esc(x.sub));
+      }).join('')}</div>
       ${s.showSlumpHelp ? `<div class="help">Consistency is how stiff or runny the fresh concrete is. S1 holds its shape and suits kerbs and slopes. S3 flows well and is right for most foundations, floors and paths. S4 is very fluid, for pumping and tightly reinforced work. Not sure? Leave it on S3; the planner checks it when they call.</div>` : ''}
     </div>
 
@@ -175,7 +215,7 @@ function step3() {
     <div class="field-group" role="group" aria-labelledby="day-l">
       <span class="label" id="day-l">Preferred delivery date</span>
       <div class="opts opts-days">${days.map(dayBtn).join('')}</div>
-      <p class="hint">Next-day delivery for orders before ${orTbd(CONFIG.delivery.nextDayCutoff, 'cut-off time')}, subject to availability.</p>
+      <p class="hint">Next-day delivery for orders placed before ${orTbd(CONFIG.delivery.nextDayCutoff, 'cut-off time')}, subject to availability.</p>
     </div>
     <div class="field-group">
       <span class="label" id="time-l">Preferred time</span>
@@ -211,21 +251,21 @@ function step4(d) {
     </dl>
     <div class="hold">
       <strong style="font-size:16px">You only pay for what's confirmed</strong>
-      <span style="line-height:1.55;color:#333">We place a temporary hold on your card to reserve the slot. A planner calls to confirm, then we charge only the final agreed amount. The hold includes a ${P.contingencyPct}% allowance for small changes on site.</span>
+      <span style="line-height:1.55;color:#333">We place a temporary hold on your card to reserve the slot. A planner calls to confirm, then we charge only the final agreed amount. The hold includes a ${P.contingencyPct}% allowance for small changes on site or extra waiting time. Anything not used is released within 24 hours of delivery.</span>
       <div class="hold-table">
-        <span>Order estimate</span><span class="num">${money(d.price.total)}</span>
+        <span>Order estimate, ${VAT}</span><span class="num">${money(d.price.total)}</span>
         <span>${P.contingencyPct}% allowance</span><span class="num">${money(d.price.contingency)}</span>
         <strong>Amount held</strong><strong class="num">${money(d.price.hold)}</strong>
       </div>
     </div>
-    <div class="pay-slot">${tbd('Card payment field. Payment provider to be chosen: Stripe or Mollie (iDEAL)')}</div>`;
+    <div class="pay-slot">${tbd('Payment field: iDEAL or card, through Stripe')}</div>`;
 }
 
 function stepbar(d) {
   return `
     ${s.step > 1 ? `<button type="button" class="btn btn-outline back" data-act="back" data-key="back">Back</button>` : ''}
     <span class="step-hint" id="step-hint" aria-live="polite">${s.step === 1 && d.check.ok ? `${esc(d.mixLabel)} selected. ` : ''}${esc(d.check.hint)}</span>
-    <span class="mini-total" aria-hidden="true"><span>Estimate ex VAT</span><strong>${money(d.price.total)}</strong></span>
+    <span class="mini-total" aria-hidden="true"><span>Estimate ${VAT}</span><strong>${money(d.price.total)}</strong></span>
     <button type="button" class="btn btn-green next ${s.step === 1 ? 'solo' : ''}" data-act="next" data-key="next" aria-describedby="step-hint" ${d.check.ok ? '' : 'disabled'}>${s.step === 4 ? 'Confirm and hold card' : 'Continue'}</button>`;
 }
 
@@ -239,20 +279,25 @@ function summary(d) {
   };
   const line = Object.fromEntries(d.price.lines.map((l) => [l.key, l]));
   const pl = P.partLoad;
+  const tr = d.price.trucks;
+  const plLabel = line.partLoad.state === 'priced'
+    ? `Part load (${line.partLoad.shortM3.toFixed(1)} m³ short of ${tr > 1 ? tr + ' × ' : ''}${pl.underM3} m³)`
+    : `Part load (under ${orTbd(pl.underM3, 'x')} m³ per truck)`;
   const rows = [
     [`${esc(d.mixLabel)} · ${m3(s.volume)}`, show(line.concrete)],
     ['Stone size', show(line.stone)],
     ['Fibres', show(line.fibres, 'fibre price')],
     ['Pump', show(line.pump)],
     ['Saturday delivery', show(line.saturday, 'surcharge')],
-    [`Part load (under ${orTbd(pl.underM3, 'x')} m³)`, show(line.partLoad, 'to agree')],
-    ['Delivery', show(line.delivery, 'rule to agree')],
+    [plLabel, show(line.partLoad, 'to agree')],
+    [`Delivery (${tr} truck${tr > 1 ? 's' : ''})`, show(line.delivery, 'rule to agree')],
   ];
   return `
     <h3>Your price</h3>
     <dl class="price-lines">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
-    <div class="total-row"><span>Estimated total, ex VAT</span><strong>${money(d.price.total)}</strong></div>
-    <p class="small-grey">Delivered from our Zaandam plant. VAT added at checkout. Example prices, to be agreed with sales.</p>
+    <div class="total-row"><span>Estimated total, ${VAT}</span><strong>${money(d.price.total)}</strong></div>
+    ${tr > 1 ? `<p class="small-grey">${m3(s.volume)} goes as ${tr} trucks of ${m3(d.price.perTruck)}.</p>` : ''}
+    <p class="small-grey">Delivered from our Zaandam plant. BTW added at checkout. Preview prices: fibres, part-load and delivery charges are suggestions for the team to agree.</p>
     <div class="help-box"><strong style="font-size:15px">Need help?</strong><a href="${C.orderPhoneHref}">Call ${esc(C.orderPhone)}</a><span class="small-grey">${esc(C.hours)}</span></div>`;
 }
 
@@ -262,7 +307,7 @@ function buyView(d) {
       <div class="tick"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div>
       <h3 id="step-title" tabindex="-1">Order received</h3>
       <p>Thanks, ${esc(s.name.trim().split(' ')[0] || 'there')}. A planner will call you to confirm the mix, volume and your ${esc(d.slotLabel)} slot. Only the confirmed amount is charged.</p>
-      <p style="font-size:15px;color:var(--grey-text)">${esc(d.mixLabel)} · ${m3(s.volume)} · estimate ${money(d.price.total)} ex VAT</p>
+      <p style="font-size:15px;color:var(--grey-text)">${esc(d.mixLabel)} · ${m3(s.volume)} · estimate ${money(d.price.total)} ${VAT}</p>
       <p class="preview-note">Preview only: no card was charged. The request is saved in this browser and shows in the <a href="planner.html">planner inbox</a>.</p>
       <button type="button" class="btn btn-outline btn-sm" data-act="reset" data-key="reset">Start a new order</button>
     </div>`;
@@ -364,6 +409,7 @@ function renderLive() {
   set('pc-msg', pcMsg(d));
   set('vol-label', m3(s.volume));
   set('calc-out', calcOut(d));
+  if (document.activeElement?.dataset?.key !== 'barrowOk') set('off-note', offloadNote(d));
   const vol = document.getElementById('vol');
   if (vol) vol.setAttribute('aria-valuetext', m3(s.volume));
   const use = document.getElementById('use-calc');
@@ -403,6 +449,7 @@ tool.addEventListener('click', (e) => {
   if (!el || el.disabled) return;
   if (el.dataset.set) {
     s[el.dataset.set] = el.dataset.value;
+    if (el.dataset.set === 'offload' && L.isPump(s.offload) && !L.canPump(s.slump, CONFIG.pumpableConsistency)) s.slump = 'S4';
     return render();
   }
   if (el.dataset.toggle) {
@@ -431,6 +478,7 @@ function onField(e) {
   const key = el.dataset.field;
   if (!key) return;
   if (el.type === 'checkbox') s[key] = el.checked;
+  if (key === 'barrowOk') return render();
   else if (el.type === 'range') s[key] = L.clampVolume(parseFloat(el.value), VOL);
   else s[key] = el.value;
   renderLive();

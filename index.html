@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Order concrete online | SL Materials Shop</title>
-<meta name="description" content="Liberated Concrete® delivered from Zaandam. Get your price in 60 seconds and book a delivery slot online, from 1 m³.">
+<meta name="description" content="Liberated Concrete™ from an Amsterdam family business. Certified, same standards as traditional concrete. Get your price in 60 seconds and book a delivery slot online, from 1 m³.">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +12,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/site.css">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='6' fill='%2399E424'/%3E%3Cpath d='M7 18c1.8 1.8 4 2.8 6.8 2.8 3.4 0 5.6-1.5 5.6-3.9 0-5-11-3-11-7.8C8.4 6.8 10.6 5.6 13.6 5.6c2.2 0 4 .7 5.6 2' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" href="img/favicon-48.png" type="image/png" sizes="48x48">
+<link rel="apple-touch-icon" href="img/icon-512.png">
+<link rel="preload" as="image" href="img/truck.jpg">
 </head>
 <body>
 
@@ -21,8 +23,7 @@
 <header class="site-header">
   <div class="wrap bar">
     <a href="#top" class="brand" aria-label="SL Materials Shop, home">
-      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="6" fill="#99E424"/><path d="M7 18c1.8 1.8 4 2.8 6.8 2.8 3.4 0 5.6-1.5 5.6-3.9 0-5-11-3-11-7.8C8.4 6.8 10.6 5.6 13.6 5.6c2.2 0 4 .7 5.6 2" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"/></svg>
-      <span class="brand-name">SL Materials</span>
+      <img class="brand-logo" src="img/sl-logo.svg" alt="" width="150" height="23">
       <span class="shop-pill">Shop</span>
     </a>
     <nav id="main-nav" class="main-nav" aria-label="Main">
@@ -49,16 +50,16 @@
   <section class="hero on-dark">
     <div class="wrap">
       <div class="hero-intro">
-        <p class="eyebrow">Liberated Concrete® · delivered from Zaandam</p>
+        <p class="eyebrow">Liberated Concrete™ · an Amsterdam family business</p>
         <h1>Circular concrete. Your price in 60 seconds.</h1>
-        <p class="hero-lede">Certified ready-mix made from recycled concrete, at market price. From 1 m³, delivered across Amsterdam and the region.</p>
+        <p class="hero-lede">Certified ready-mix that meets the same standards as traditional concrete, with no compromises. Made from recycled concrete at our Zaandam plant, at market price. From 1 m³, delivered across Amsterdam and the region.</p>
       </div>
       <div class="route-cards">
         <div class="route">
           <p class="kicker">Home and small jobs</p>
           <h2>Shed base, patio, driveway, foundations?</h2>
           <p>See your exact price and book a delivery slot online.</p>
-          <p class="price-line">From <strong><span data-slot="fromPrice"></span> per m³</strong> ex VAT.</p>
+          <p class="price-line">From <strong><span data-slot="fromPrice"></span> per m³</strong> + BTW.</p>
           <a class="btn btn-green" href="#quote-tool">Get an instant price</a>
         </div>
         <div class="route">
@@ -66,14 +67,30 @@
           <h2>Site pours, piling, groundworks?</h2>
           <p>Priority slots, invoice terms and a direct line to planning.</p>
           <p class="price-line">One-off larger pour? <strong>Quote within <span data-slot="quoteTime"></span>.</strong></p>
-          <a class="btn btn-outline-green" href="#trade">Trade enquiries</a>
+          <a class="btn btn-outline-green" href="#trade">Trade enquiry</a>
         </div>
       </div>
       <ul class="proof">
         <li>NEN-EN 206 / NEN 8005 certified</li>
+        <li>Same standards and strength as traditional concrete</li>
         <li>63–80% lower CO₂ than reference concrete</li>
         <li>A planner confirms before you're charged</li>
       </ul>
+    </div>
+  </section>
+
+  <section class="section quality" aria-labelledby="quality-title">
+    <div class="wrap quality-grid">
+      <figure class="quality-photo"><img src="img/pour.jpg" alt="Liberated Concrete being poured on a building site" width="1400" height="933" loading="lazy"></figure>
+      <div class="quality-text">
+        <h2 id="quality-title" class="section-title">Proper concrete. No compromises.</h2>
+        <p class="section-lede">Liberated Concrete is new concrete, made from three recovered materials: cement, sand and gravel freed from old concrete. It is certified to the same standards as traditional concrete and performs on a par with it, sometimes better. It's used for high-rise, tunnels and bridges as well as driveways and sheds.</p>
+        <ul class="quality-points">
+          <li><strong>Certified and tested</strong><span>Every mix is certified and has an EN 15804 environmental product declaration (EPD).</span></li>
+          <li><strong>Technical support</strong><span>Recycled materials need careful engineering, so our technical team checks every mix and can help you choose.</span></li>
+          <li><strong>Local, since 1965</strong><span>We grew out of the Rutte Group, an Amsterdam family business with over 60 years in concrete.</span></li>
+        </ul>
+      </div>
     </div>
   </section>
 
@@ -109,10 +126,10 @@
     <div class="wrap">
       <div class="trade on-dark">
         <div>
-          <h2>Pouring regularly? Open a trade account.</h2>
-          <p>Priority slots, <span data-slot="tradeTerms"></span>, a named planning contact and the paperwork your engineer needs.</p>
+          <h2>A bigger job? Get a trade price.</h2>
+          <p>Email us your requirements and we'll come back with a price within <span data-slot="quoteTime"></span>. Regular customers get priority slots, <span data-slot="tradeTerms"></span>, a named planning contact and the paperwork your engineer needs.</p>
         </div>
-        <a class="btn btn-green" data-href="tradeMail">Open a trade account</a>
+        <a class="btn btn-green" data-href="tradeMail">Trade enquiry</a>
       </div>
     </div>
   </section>
@@ -121,11 +138,16 @@
     <div class="wrap">
       <h2 class="section-title">Frequently asked questions</h2>
       <div class="faq">
-        <details><summary>What's the minimum order?</summary><p>1 m³ online. A part-load charge applies to small loads. For less than 1 m³, bagged concrete from a builders' merchant is usually better value.</p></details>
-        <details><summary>How much should I order?</summary><p>Use the dimensions calculator in the order tool. It adds 10% to cover waste and uneven ground.</p></details>
-        <details><summary>Which mix do I need?</summary><p>Choose your project and we recommend a mix, or pick "Not sure" and a planner will advise when they call.</p></details>
-        <details><summary>Where do you deliver?</summary><p>Around <span data-slot="radius"></span> km from our Zaandam plant, including Amsterdam, Haarlem, Purmerend and Alkmaar.</p></details>
-        <details><summary>How do I pay?</summary><p>Online by card <span class="tbd">[and iDEAL]</span>. Trade customers can apply for invoice terms.</p></details>
+        <details><summary>Is Liberated Concrete as good as normal concrete?</summary><p>Yes. It meets the same standards as traditional concrete, holds the same certifications and performs on a par with it, sometimes better. It's used wherever traditional concrete is used, from house foundations to high-rise, tunnels and bridges.</p></details>
+        <details><summary>Why choose it over normal concrete?</summary><p>Same quality, same market price, and 63–80% less CO₂ than reference concrete. It's made from old concrete, so no new sand, gravel or cement has to be dug up or burned.</p></details>
+        <details><summary>Who are SL Materials?</summary><p>An Amsterdam concrete business that grew out of the Rutte Group, a family firm working in concrete since 1965. We make Liberated Concrete at our plant in Zaandam. <a data-href="mainSite">More about us</a>.</p></details>
+        <details><summary>What's the minimum order?</summary><p>1 m³ online. A truck carries up to 12 m³, so loads under 8 m³ pay a part-load charge, which is shown in your price before you order. For less than 1 m³, bagged concrete from a builders' merchant is usually better value.</p></details>
+        <details><summary>How much should I order?</summary><p>Use the dimensions calculator in the order tool. It adds 10% to cover waste and uneven ground. You can order up to 48 m³ online; for more, ask for a quote.</p></details>
+        <details><summary>Which mix do I need?</summary><p>Choose your project in the <a href="#quote-tool">order tool</a> and it recommends a mix. Still not sure? Call <a data-href="orderPhoneHref" data-text="orderPhone"></a> or email our sales team at <a data-href="salesMail" data-text="salesEmail"></a> and we'll help.</p></details>
+        <details><summary>How long can the truck wait?</summary><p>Every delivery includes up to 30 minutes to unload. After that, waiting time is charged. If you're barrowing the concrete, make sure you have enough people and wheelbarrows ready.</p></details>
+        <details><summary>Can you pump the concrete?</summary><p>Yes. Choose "Pump, SL arranges it" and we'll book one; pump hire is charged separately and a planner will be in touch with the price. Pumping needs a fluid mix (S3 or S4).</p></details>
+        <details><summary>Where do you deliver?</summary><p>Within about <span data-slot="radius"></span> km of our Zaandam plant, including Amsterdam, Haarlem and Purmerend.</p></details>
+        <details><summary>How do I pay?</summary><p>Online, by iDEAL or card. We put a temporary hold on the amount and only charge what's confirmed; anything unused is released within 24 hours of delivery. Trade customers can apply for invoice terms.</p></details>
       </div>
     </div>
   </section>
@@ -134,7 +156,7 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    <span>SL Materials · <span data-text="address"></span> · <span data-text="mainPhone"></span></span>
+    <span>SL Materials · <span data-text="address"></span> · <a data-href="mainPhoneHref" data-text="mainPhone"></a></span>
     <a data-href="mainSite">sl-materials.nl</a>
   </div>
 </footer>

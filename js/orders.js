@@ -3,9 +3,9 @@
 // whole flow locally. A real backend replaces load/save later; the rest stays.
 
 import { CONFIG } from './config.js';
-import { nextDeliveryDays, formatEUR, round2 } from './logic.js';
+import { nextDeliveryDays, formatEUR, round2, priceOrder } from './logic.js';
 
-const KEY = 'sl-shop-orders-v1';
+const KEY = 'sl-shop-orders-v2'; // v2: prices from the 9 Nov review
 
 export const STATUSES = {
   waiting: { label: 'Waiting' },
@@ -51,7 +51,7 @@ export function customerMessage(order) {
   const first = (order.name || '').trim().split(' ')[0] || 'there';
   const price = formatEUR(order.estimate, CONFIG.locale);
   if (order.status === 'confirmed') {
-    return `Hi ${first}, your SL Materials delivery is confirmed for ${slotText(order.slot)}: ${order.mix}, ${order.volume.toFixed(1)} m³. Final price ${price} ex VAT. Pay here: [payment link]`;
+    return `Hi ${first}, your SL Materials delivery is confirmed for ${slotText(order.slot)}: ${order.mix}, ${order.volume.toFixed(1)} m³. Final price ${price} excl. BTW. Pay here: [payment link]`;
   }
   if (order.status === 'offered') {
     return `Hi ${first}, we can't make ${slotText(order.slot)}. Can we deliver ${slotText(order.offeredSlot)} instead? Tap to accept: [link]`;
@@ -60,6 +60,24 @@ export function customerMessage(order) {
     return `Hi ${first}, sorry, we can't take this order online. A planner will call you to talk it through. Your card hold has been released.`;
   }
   return '';
+}
+
+// Orders where the customer asked SL to arrange the pump.
+export const needsSLPump = (order) => /pump \(sl\)/i.test(order.offload || '');
+
+// Planner notes on the pump booking: status 'todo' or 'booked', plus free text.
+export function setPump(order, { status, note } = {}, at = new Date().toISOString()) {
+  const pump = { status: 'todo', note: '', ...(order.pump || {}) };
+  if (status) pump.status = status;
+  if (note != null) pump.note = note;
+  return { ...order, pump, updatedAt: at };
+}
+
+// Date key (YYYY-MM-DD) for the day after `today`, in local time.
+export function tomorrowKey(today = new Date()) {
+  const d = new Date(today);
+  d.setDate(d.getDate() + 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 // ---- Building an order from the shop ----
@@ -79,18 +97,18 @@ export function sampleOrders(today = new Date()) {
   const d = nextDeliveryDays(today, 6, CONFIG.locale).filter((x) => !x.saturday);
   const at = new Date(today).toISOString();
   const slot = (i, time) => ({ key: d[i].key, dow: d[i].dow, dm: d[i].dm, time });
-  const base = CONFIG.pricing.basePerM3;
-  const est = (v, add = 0) => round2((base + add) * v);
+  // Same price the shop would show: concrete, stone, part load and delivery.
+  const est = (volume, stone = 'std', offload = null) => priceOrder({ volume, stone, offload }, CONFIG.pricing).total;
   const mk = (id, s, who, name, pc, contact, job, note, mix, volume, offload, estimate) => ({
     id, createdAt: at, updatedAt: at, source: 'sample', status: 'waiting', offeredSlot: null,
     slot: s, who, name, phone: '', email: '', contact, pc, job, note, mix, volume, offload,
-    stone: '4–32 mm', consistency: 'S3', fibres: false, estimate, hold: round2(estimate * (1 + CONFIG.pricing.contingencyPct / 100)),
+    stone: id === 'sample-d' ? '2–8 mm' : '4–32 mm', consistency: id === 'sample-d' ? 'S4' : 'S3', fibres: false, estimate, hold: round2(estimate * (1 + CONFIG.pricing.contingencyPct / 100)),
   });
   return [
-    mk('sample-a', slot(0, 'am'), 'Homeowner', 'Anna', '1013', 'WhatsApp', 'Shed base', 'Gate 1.2 m wide', 'C20/25', 2.5, 'Wheelbarrow', est(2.5)),
+    { ...mk('sample-a', slot(0, 'am'), 'Homeowner', 'Anna', '1013', 'WhatsApp', 'Shed base', 'Gate 1.2 m wide', 'C20/25', 2.5, 'Wheelbarrow', est(2.5)), phone: '+31 6 12 34 56 78' },
     mk('sample-b', slot(1, 'am'), 'Small builder', 'Joost', '1503', 'Phone', 'Strip foundations', 'Extension, 2 pours', 'C20/25', 6, 'Chute', est(6)),
     mk('sample-c', slot(1, 'pm'), 'Homeowner', 'Fatima', '2011', 'Email', 'Not sure', 'Garden room, 4 × 3 m', 'Advise', 1.5, 'Chute', est(1.5)),
-    mk('sample-d', slot(2, 'am'), 'Landscaper', 'Pieter', '1441', 'Phone', 'Patio', 'Fine finish wanted', 'C25/30', 3, 'Pump', est(3, 14)),
+    mk('sample-d', slot(2, 'am'), 'Landscaper', 'Pieter', '1441', 'Phone', 'Patio', 'Fine finish wanted', 'C25/30', 3, 'Pump (SL)', est(3, 'fine', 'pumpsl')),
     mk('sample-e', slot(3, 'pm'), 'Homeowner', 'Eva', '1072', 'WhatsApp', 'Driveway', 'Narrow street, canal side', 'C30/37', 4.5, 'Chute', est(4.5)),
   ];
 }

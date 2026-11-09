@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/planner.css">
+<link rel="icon" href="img/favicon-48.png" type="image/png" sizes="48x48">
 </head>
 <body class="planner">
 
@@ -20,7 +21,7 @@
 <header class="p-header">
   <div class="wrap p-bar">
     <div class="p-brand">
-      <span class="brand-name">SL Materials</span>
+      <img class="brand-logo" src="img/sl-logo.svg" alt="SL Materials" width="150" height="23">
       <span class="p-sub">Planning · Small orders</span>
     </div>
     <div class="p-counts" aria-live="polite"><span id="c-waiting"></span><span id="c-confirmed"></span></div>
@@ -69,7 +70,9 @@
   <div class="p-info">
     <div><span class="p-kicker">On confirm</span><span>Customer gets a text or WhatsApp with the slot and final price, and a link to pay.</span></div>
     <div><span class="p-kicker">Offer other time</span><span>Pick a free slot from the truck plan; the customer accepts with one tap.</span></div>
-    <div><span class="p-kicker">Pricing</span><span>Set by sales once. Planners never quote; they only say yes, no or another time.</span></div>
+    <div><span class="p-kicker">Pricing</span><span>Set by sales once. Planners never quote; they only say yes, no or another time. Pump hire is the exception: agree it with the customer.</span></div>
+    <div><span class="p-kicker">Tomorrow's orders</span><span>No time to wait for a reply: phone the customer to agree any change.</span></div>
+    <div><span class="p-kicker">New order alerts</span><span>Planners will get an email or phone notification for every new order once the shop is live. In this preview, an alert shows on this page.</span></div>
   </div>
 
   <p class="p-reset"><button type="button" class="link-btn" id="reset">Reset to sample data</button></p>

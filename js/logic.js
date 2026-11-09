@@ -72,6 +72,12 @@ export function nextDeliveryDays(from, count, locale = 'en-GB') {
 
 // ---- Price ----
 
+// Split an order evenly over the fewest trucks: 14 m³ with 12 m³ trucks is 2 × 7 m³.
+export function splitTrucks(volume, truckM3) {
+  const trucks = Math.max(1, Math.ceil(volume / truckM3 - 1e-9));
+  return { trucks, perTruck: volume / trucks };
+}
+
 // Each line has a state:
 //   none       not part of this order
 //   included   part of it at no extra cost
@@ -80,7 +86,8 @@ export function nextDeliveryDays(from, count, locale = 'en-GB') {
 //   onConfirm  applies, priced by the planner on confirmation (not counted)
 export function priceOrder({ volume, stone = 'std', fibres = false, offload = null, saturday = false }, p) {
   const lines = [];
-  const add = (key, state, amount = null) => lines.push({ key, state, amount: amount == null ? null : round2(amount) });
+  const add = (key, state, amount = null, extra = {}) => lines.push({ key, state, amount: amount == null ? null : round2(amount), ...extra });
+  const { trucks, perTruck } = splitTrucks(volume, p.truckM3 || Infinity);
 
   add('concrete', 'priced', p.basePerM3 * volume);
 
@@ -99,24 +106,43 @@ export function priceOrder({ volume, stone = 'std', fibres = false, offload = nu
   else if (p.saturdaySurcharge == null) add('saturday', 'tbd');
   else add('saturday', 'priced', p.saturdaySurcharge);
 
+  // Part load: each truck pays for every m³ it is short of `underM3`.
   const pl = p.partLoad || {};
-  if (pl.underM3 == null || pl.charge == null) add('partLoad', 'tbd');
-  else if (volume < pl.underM3) add('partLoad', 'priced', pl.charge);
+  const shortPerTruck = pl.underM3 == null ? 0 : Math.max(0, pl.underM3 - perTruck);
+  if (pl.underM3 == null || pl.perM3Short == null) add('partLoad', 'tbd');
+  else if (shortPerTruck > 0) add('partLoad', 'priced', trucks * shortPerTruck * pl.perM3Short, { shortM3: round2(trucks * shortPerTruck) });
   else add('partLoad', 'none');
 
-  if (p.deliveryCharge == null) add('delivery', 'tbd');
-  else add('delivery', 'priced', p.deliveryCharge);
+  if (p.deliveryPerTruck == null) add('delivery', 'tbd', null, { trucks });
+  else add('delivery', 'priced', p.deliveryPerTruck * trucks, { trucks });
 
   const total = round2(lines.reduce((sum, l) => sum + (l.state === 'priced' ? l.amount : 0), 0));
   const contingency = round2(total * p.contingencyPct / 100);
-  return { lines, total, contingency, hold: round2(total + contingency) };
+  return { lines, total, contingency, hold: round2(total + contingency), trucks, perTruck };
+}
+
+// ---- Delivery rules ----
+
+export const isPump = (offload) => offload === 'pumpown' || offload === 'pumpsl';
+
+// Stiff mixes (S1, S2) can't go through a pump.
+export const canPump = (consistency, pumpable = ['S3', 'S4']) => pumpable.includes(consistency);
+
+// Wheelbarrow loads per m³: a builder's barrow takes about 60 litres of concrete.
+export const barrowLoads = (volume) => Math.ceil(volume / 0.06);
+
+// Is it already past today's next-day cut-off ('11:00')?
+export function pastCutoff(now, cutoff) {
+  if (!cutoff) return false;
+  const [h, m] = cutoff.split(':').map(Number);
+  return now.getHours() * 60 + now.getMinutes() >= h * 60 + m;
 }
 
 // ---- Step checks ----
 
 export const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s ?? '').trim());
 
-// state: the wizard state; ctx: { hasMix, inArea, dayChosen }
+// state: the wizard state; ctx: { hasMix, inArea, dayChosen, pumpOk }
 export function checkStep(step, state, ctx) {
   if (step === 1) {
     return ctx.hasMix ? { ok: true, hint: 'Next: delivery and volume.' } : { ok: false, hint: 'Choose a project or a mix code.' };
@@ -124,6 +150,8 @@ export function checkStep(step, state, ctx) {
   if (step === 2) {
     if (!ctx.inArea) return { ok: false, hint: 'Enter a postcode in our delivery area.' };
     if (!state.offload) return { ok: false, hint: 'Choose an offloading method.' };
+    if (isPump(state.offload) && ctx.pumpOk === false) return { ok: false, hint: 'S1 and S2 can\'t be pumped. Choose S3 or S4.' };
+    if (state.offload === 'barrow' && !state.barrowOk) return { ok: false, hint: 'Confirm you can unload within 30 minutes.' };
     return { ok: true, hint: 'Next: date and your details.' };
   }
   if (step === 3) {
