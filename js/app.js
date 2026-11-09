@@ -283,14 +283,19 @@ function summary(d) {
   const plLabel = line.partLoad.state === 'priced'
     ? `Part load (${line.partLoad.shortM3.toFixed(1)} m³ short of ${tr > 1 ? tr + ' × ' : ''}${pl.underM3} m³)`
     : `Part load (under ${orTbd(pl.underM3, 'x')} m³ per truck)`;
+  // Saturday has no line of its own: it shows on the delivery line only when a Saturday is picked.
+  const sat = line.saturday.state !== 'none';
+  const deliveryLabel = `Delivery (${tr} truck${tr > 1 ? 's' : ''}${sat ? ', Saturday' : ''})`;
+  const deliveryValue = !sat ? show(line.delivery, 'rule to agree')
+    : line.saturday.state === 'priced' && line.delivery.state === 'priced' ? money(line.delivery.amount + line.saturday.amount)
+    : `${show(line.delivery, 'rule to agree')} ${tbd('+ surcharge')}`;
   const rows = [
     [`${esc(d.mixLabel)} · ${m3(s.volume)}`, show(line.concrete)],
     ['Stone size', show(line.stone)],
     ['Fibres', show(line.fibres, 'fibre price')],
     ['Pump', show(line.pump)],
-    ['Saturday delivery', show(line.saturday, 'surcharge')],
     [plLabel, show(line.partLoad, 'to agree')],
-    [`Delivery (${tr} truck${tr > 1 ? 's' : ''})`, show(line.delivery, 'rule to agree')],
+    [deliveryLabel, deliveryValue],
   ];
   return `
     <h3>Your price</h3>
