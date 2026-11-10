@@ -1,8 +1,9 @@
-import { CONFIG } from './config.js?v=202611091830';
-import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611091830';
-import * as L from './logic.js?v=202611091830';
-import { addOrder, orderFromShop } from './orders.js?v=202611091830';
-import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611091830';
+import { CONFIG } from './config.js?v=202611102035';
+import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611102035';
+import * as L from './logic.js?v=202611102035';
+import { orderFromShop } from './orders.js?v=202611102035';
+import { submitOrder } from './backend.js?v=202611102035';
+import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611102035';
 
 const P = CONFIG.pricing;
 const C = CONFIG.contact;
@@ -331,7 +332,7 @@ function stepbar(d) {
   const nextLabel = s.step === 4 ? tx('Confirm and hold card', 'Bevestigen en reserveren') : tx('Continue', 'Verder');
   return `
     ${s.step > 1 ? `<button type="button" class="btn btn-outline back" data-act="back" data-key="back">${tx('Back', 'Terug')}</button>` : ''}
-    <span class="step-hint" id="step-hint" aria-live="polite">${s.step === 1 && d.check.ok ? `${esc(d.mixLabel)} ${tx('selected', 'gekozen')}. ` : ''}${esc(hintText(d.check.hint))}</span>
+    <span class="step-hint" id="step-hint" aria-live="polite">${s.step === 1 && d.check.ok ? `${esc(d.mixLabel)} ${tx('selected', 'gekozen')}. ` : ''}${esc(hintText(d.check.hint))}${s.sendError ? `<strong class="send-error">${tx(`Sorry, your request did not go through. Please try again, or call ${esc(CONFIG.contact.orderPhone)}.`, `Sorry, je aanvraag is niet verstuurd. Probeer het opnieuw of bel ${esc(CONFIG.contact.orderPhone)}.`)}</strong>` : ''}</span>
     <span class="mini-total" aria-hidden="true"><span>${tx('Estimate', 'Schatting')} ${vatLabel()}</span><strong>${pm(d.price.total)}</strong></span>
     <button type="button" class="btn btn-green next ${s.step === 1 ? 'solo' : ''}" data-act="next" data-key="next" aria-describedby="step-hint" ${d.check.ok ? '' : 'disabled'}>${nextLabel}</button>`;
 }
@@ -412,8 +413,8 @@ function buyView(d) {
       <p style="font-size:15px;color:var(--grey-text)">${esc(d.mixLabel)} · ${m3(s.volume)} · ${tx('estimate', 'schatting')} ${money(d.price.totalIncl)} ${tx('incl. BTW', 'incl. btw')}</p>
       <p class="trust-line" style="text-align:left"><img src="img/truck.jpg" alt="" width="56" height="56" loading="lazy"><span>${tx("You're getting certified concrete, made to the same standards as traditional concrete, from a local Amsterdam business.",
         'Je krijgt gecertificeerd beton, gemaakt volgens dezelfde normen als traditioneel beton, van een lokaal Amsterdams bedrijf.')}</span></p>
-      <p class="preview-note">${tx('Preview only: no card was charged. The request is saved in this browser and shows in the <a href="planner.html">planner inbox</a>.',
-        'Alleen een preview: er is niets afgeschreven. De aanvraag is in deze browser opgeslagen en staat in de <a href="planner.html">inbox van de planners</a>.')}</p>
+      <p class="preview-note">${tx('Test phase: no card was charged. Your request has been sent to our planners.',
+        'Testfase: er is niets afgeschreven. Je aanvraag is naar onze planners gestuurd.')}</p>
       <button type="button" class="btn btn-outline btn-sm" data-act="reset" data-key="reset">${tx('Start a new order', 'Nieuwe bestelling')}</button>
     </div>`;
   }
@@ -523,14 +524,14 @@ function renderLive() {
   if (use) use.disabled = !d.calc.ok || d.calc.tooBig;
 }
 
-// Local preview: hand the order to the planner inbox (planner.html) in this browser.
+// Send the order to the planners (saved in Supabase; they get an alert).
 // Planners work in English for now, so the order is saved with the English labels.
 function sendToPlanners(d) {
   const at = new Date().toISOString();
   const day = getDays('en-GB').find((x) => x.key === d.dayObj.key) || d.dayObj;
   const mix = d.isProject ? (d.proj.mix || 'Advise') : d.code.code;
-  addOrder(orderFromShop({
-    id: 'web-' + Date.now().toString(36),
+  return submitOrder(orderFromShop({
+    id: 'web-' + crypto.randomUUID(),
     at,
     slot: { key: day.key, dow: day.dow, dm: day.dm, time: s.time },
     name: s.name.trim(), phone: s.phone.trim(), email: s.email.trim(), notes: s.notes.trim(),
@@ -577,7 +578,15 @@ tool.addEventListener('click', (e) => {
     case 'next':
       if (!d.check.ok) return;
       if (s.step < 4) s.step += 1;
-      else { sendToPlanners(d); s.done = true; }
+      else {
+        if (s.sending) return;
+        s.sending = true; s.sendError = false; el.disabled = true;
+        sendToPlanners(d)
+          .then(() => { s.done = true; })
+          .catch(() => { s.sendError = true; })
+          .finally(() => { s.sending = false; render({ focusTitle: true }); });
+        return;
+      }
       return render({ focusTitle: true });
     case 'reset': s = fresh('buy'); return render({ focusTitle: true });
     case 'to-quote': e.preventDefault(); s.tab = 'quote'; render(); document.getElementById('tab-quote').focus(); return;

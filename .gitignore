@@ -5,3 +5,7 @@ reference/
 .DS_Store
 Icon?
 node_modules/
+
+# Supabase local files
+supabase/.temp/
+supabase/.branches/

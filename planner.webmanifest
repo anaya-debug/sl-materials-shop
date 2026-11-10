@@ -1,0 +1,10 @@
+{
+  "name": "SL Planner",
+  "short_name": "SL Planner",
+  "start_url": "planner.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [{ "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }]
+}
