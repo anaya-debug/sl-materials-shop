@@ -51,10 +51,14 @@ Deno.serve(async (req) => {
 
   // Email every planner, as a backup to push. Needs a Resend account (resend.com).
   let emailed = 0;
-  const resendKey = Deno.env.get('RESEND_API_KEY');
+  const info: Record<string, unknown> = {};
+  const resendKey = Deno.env.get('RESEND_API_KEY')?.trim();
+  info.emailKey = !!resendKey;
   if (resendKey) {
-    const { data: users } = await db.auth.admin.listUsers({ perPage: 200 });
+    const { data: users, error: usersError } = await db.auth.admin.listUsers({ perPage: 200 });
+    if (usersError) info.usersError = usersError.message;
     const to = (users?.users ?? []).map((u) => u.email).filter(Boolean) as string[];
+    info.planners = to.length;
     if (to.length) {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -67,8 +71,10 @@ Deno.serve(async (req) => {
         }),
       });
       if (res.ok) emailed = to.length;
+      else info.emailError = `${res.status} ${(await res.text()).slice(0, 300)}`;
     }
   }
 
-  return Response.json({ pushed, emailed });
+  // The reply is kept by the database (net._http_response), which helps when checking a missed alert.
+  return Response.json({ pushed, emailed, ...info });
 });
