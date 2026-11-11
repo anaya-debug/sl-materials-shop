@@ -1,9 +1,9 @@
-import { CONFIG } from './config.js?v=202611102035';
-import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611102035';
-import * as L from './logic.js?v=202611102035';
-import { orderFromShop } from './orders.js?v=202611102035';
-import { submitOrder } from './backend.js?v=202611102035';
-import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611102035';
+import { CONFIG } from './config.js?v=202611112103';
+import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611112103';
+import * as L from './logic.js?v=202611112103';
+import { orderFromShop } from './orders.js?v=202611112103';
+import { submitOrder } from './backend.js?v=202611112103';
+import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611112103';
 
 const P = CONFIG.pricing;
 const C = CONFIG.contact;

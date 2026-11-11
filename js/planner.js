@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js?v=202611102035';
-import { formatEUR, nextDeliveryDays } from './logic.js?v=202611102035';
-import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611102035';
-import * as B from './backend.js?v=202611102035';
+import { CONFIG } from './config.js?v=202611112103';
+import { formatEUR, nextDeliveryDays } from './logic.js?v=202611112103';
+import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611112103';
+import * as B from './backend.js?v=202611112103';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => formatEUR(n, CONFIG.locale);
@@ -276,14 +276,18 @@ $('login-form').addEventListener('submit', async (e) => {
     if (mode === 'set') {
       const { error } = await B.setPassword(pw);
       if (error) throw error;
+      // Saved: from now on this page signs in normally.
       mode = 'signin';
       history.replaceState(null, '', location.pathname);
-      showInbox(await B.getSession());
+      const session = await B.getSession();
+      if (session) await showInbox(session);
+      else showAuth('Password saved. Sign in with your email and new password.', true);
     } else if (mode === 'reset') {
       const { error } = await B.sendReset(email);
       if (error) throw error;
       showAuth('If that email belongs to a planner, a link is on its way.', true);
     } else {
+      if (!email) { showAuth('Enter your email and password.'); return; }
       const { data, error } = await B.signIn(email, pw);
       if (error) throw new Error('Email or password is not right.');
       showInbox(data.session);
