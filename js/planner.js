@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js?v=202611112103';
-import { formatEUR, nextDeliveryDays } from './logic.js?v=202611112103';
-import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611112103';
-import * as B from './backend.js?v=202611112103';
+import { CONFIG } from './config.js?v=202611112106';
+import { formatEUR, nextDeliveryDays } from './logic.js?v=202611112106';
+import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611112106';
+import * as B from './backend.js?v=202611112106';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => formatEUR(n, CONFIG.locale);
@@ -275,7 +275,8 @@ $('login-form').addEventListener('submit', async (e) => {
   try {
     if (mode === 'set') {
       const { error } = await B.setPassword(pw);
-      if (error) throw error;
+      // Same as the current password: it is already saved, so carry on.
+      if (error && error.code !== 'same_password') throw error;
       // Saved: from now on this page signs in normally.
       mode = 'signin';
       history.replaceState(null, '', location.pathname);
