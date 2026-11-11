@@ -19,7 +19,24 @@ export async function submitOrder(order) {
   if (error) throw error;
 }
 
-const fromRow = (r) => ({ ...r.data, id: r.id, status: r.status });
+// Fill in anything missing, so one incomplete order can never stop the list from showing.
+const fromRow = (r) => {
+  const d = r.data || {};
+  return {
+    ...d,
+    id: r.id,
+    status: r.status,
+    who: d.who || d.name || 'Customer',
+    pc: d.pc || '',
+    job: d.job || '',
+    mix: d.mix || '?',
+    offload: d.offload || '',
+    volume: Number(d.volume) || 0,
+    estimate: Number(d.estimate) || 0,
+    hold: Number(d.hold) || 0,
+    extras: Array.isArray(d.extras) ? d.extras : [],
+  };
+};
 
 export async function fetchOrders() {
   const { data, error } = await db.from('orders').select('id, status, data').order('created_at');

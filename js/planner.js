@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js?v=202611112109';
-import { formatEUR, nextDeliveryDays } from './logic.js?v=202611112109';
-import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611112109';
-import * as B from './backend.js?v=202611112109';
+import { CONFIG } from './config.js?v=202611112111';
+import { formatEUR, nextDeliveryDays } from './logic.js?v=202611112111';
+import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611112111';
+import * as B from './backend.js?v=202611112111';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => formatEUR(n, CONFIG.locale);
@@ -83,7 +83,9 @@ function render() {
   const list = orders
     .filter((o) => filter === 'all' || o.status === filter)
     .sort((a, b) => slotSortKey(a.slot).localeCompare(slotSortKey(b.slot)));
-  $('rows').innerHTML = list.map(row).join('');
+  $('rows').innerHTML = list.map((o) => {
+    try { return row(o); } catch (err) { console.error('Could not show order', o.id, err); return ''; }
+  }).join('');
   $('empty').hidden = list.length > 0;
   if (activeKey) document.querySelector(`[data-key="${CSS.escape(activeKey)}"]`)?.focus({ preventScroll: true });
 }

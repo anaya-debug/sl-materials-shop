@@ -2,8 +2,8 @@
 // For now they live in this browser only (localStorage), so the team can try the
 // whole flow locally. A real backend replaces load/save later; the rest stays.
 
-import { CONFIG } from './config.js?v=202611112109';
-import { nextDeliveryDays, formatEUR, round2, priceOrder, withVat } from './logic.js?v=202611112109';
+import { CONFIG } from './config.js?v=202611112111';
+import { nextDeliveryDays, formatEUR, round2, priceOrder, withVat } from './logic.js?v=202611112111';
 
 const KEY = 'sl-shop-orders-v2'; // v2: prices from the 9 Nov review
 
