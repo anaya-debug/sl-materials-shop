@@ -1,11 +1,6 @@
 # SL Materials Shop
 
 Small-order concrete shop: homepage plus the online order tool (Buy online, Get a quote, Call us).
-
-- `/` is the **concept demo** for reviewers: no login, orders stay in the visitor's browser, and a
-  Shop / Planner switch bar (`demo-bar.js`). Files at the root: `index.html`, `planner.html`, `css/`, `js/`, `img/`.
-- `/live/` is the **real version**: orders saved in Supabase, planner sign-in, email and push alerts.
-  The table below describes the files under `live/`.
 Plain HTML, CSS and JavaScript. No build step, so it runs on any static host.
 
 ## Run it

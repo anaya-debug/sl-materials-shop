@@ -6,7 +6,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
 import webpush from 'npm:web-push@3.6.7';
 
-const SITE = Deno.env.get('SITE_URL') ?? 'https://sl-materials-webshop.com/live';
+const SITE = Deno.env.get('SITE_URL') ?? 'https://sl-materials-webshop.com';
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
 webpush.setVapidDetails(

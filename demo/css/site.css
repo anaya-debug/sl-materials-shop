@@ -337,7 +337,3 @@ input[type=range] { flex: 1 1 auto; accent-color: var(--ink); height: 32px; min-
   .main-nav ul { gap: 16px; }
   .header-phone { display: none; }
 }
-.send-error { display:block; color:#A33A00; margin-top:4px; }
-
-/* Anything marked hidden stays hidden, whatever its layout rule says. */
-[hidden] { display: none !important; }

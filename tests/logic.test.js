@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import * as L from '../live/js/logic.js';
-import { CONFIG } from '../live/js/config.js';
+import * as L from '../js/logic.js';
+import { CONFIG } from '../js/config.js';
 
 const VOL = CONFIG.volume;
 const RANGES = CONFIG.delivery.postcodeRanges;
