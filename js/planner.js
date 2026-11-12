@@ -1,13 +1,12 @@
-import { CONFIG } from './config.js?v=202611121022';
-import { formatEUR, nextDeliveryDays } from './logic.js?v=202611121022';
-import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611121022';
-import * as B from './backend.js?v=202611121022';
+import { CONFIG } from './config.js?v=202611091830';
+import { formatEUR, nextDeliveryDays } from './logic.js?v=202611091830';
+import { STATUSES, applyAction, counts, customerMessage, loadOrders, saveOrders, resetOrders, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611091830';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => formatEUR(n, CONFIG.locale);
 const $ = (id) => document.getElementById(id);
 
-let orders = [];
+let orders = loadOrders();
 let filter = 'all';
 const FILTER_LABELS = { all: 'All', waiting: 'Waiting', confirmed: 'Confirmed', offered: 'New time offered', declined: 'Declined' };
 
@@ -83,9 +82,7 @@ function render() {
   const list = orders
     .filter((o) => filter === 'all' || o.status === filter)
     .sort((a, b) => slotSortKey(a.slot).localeCompare(slotSortKey(b.slot)));
-  $('rows').innerHTML = list.map((o) => {
-    try { return row(o); } catch (err) { console.error('Could not show order', o.id, err); return ''; }
-  }).join('');
+  $('rows').innerHTML = list.map(row).join('');
   $('empty').hidden = list.length > 0;
   if (activeKey) document.querySelector(`[data-key="${CSS.escape(activeKey)}"]`)?.focus({ preventScroll: true });
 }
@@ -109,9 +106,8 @@ function showMessage(o) {
 function update(id, action, payload, focusKey) {
   const i = orders.findIndex((o) => o.id === id);
   if (i < 0) return;
-  const before = orders[i];
   orders[i] = applyAction(orders[i], action, payload);
-  persist(orders[i], before);
+  saveOrders(orders);
   render();
   if (focusKey) document.querySelector(`[data-key="${CSS.escape(focusKey)}"]`)?.focus();
   if (action !== 'undo') showMessage(orders[i]);
@@ -137,15 +133,11 @@ document.querySelector('.filters').addEventListener('click', (e) => {
   render();
 });
 
-// Save one order. If it fails (no connection, signed out), put it back and say so.
-async function persist(o, before) {
-  try { await B.saveOrder(o); } catch (err) {
-    const i = orders.findIndex((x) => x.id === o.id);
-    if (i >= 0 && before) orders[i] = before;
-    render();
-    toastText('Not saved', 'Check your connection and try again. ' + (err.message || ''));
-  }
-}
+$('reset').addEventListener('click', () => {
+  if (!confirm('Replace every order on this page with the sample data?')) return;
+  orders = resetOrders();
+  render();
+});
 
 // Pump status and notes: saved on change, without redrawing while typing.
 $('rows').addEventListener('change', (e) => {
@@ -153,28 +145,28 @@ $('rows').addEventListener('change', (e) => {
   if (!el) return;
   const i = orders.findIndex((o) => o.id === el.dataset.id);
   if (i < 0) return;
-  const before = orders[i];
   orders[i] = setPump(orders[i], { [el.dataset.pump]: el.value });
-  persist(orders[i], before);
+  saveOrders(orders);
   if (el.dataset.pump === 'status') render();
 });
 
-function toastText(title, msg) {
+// New orders placed in the shop in another tab: refresh and show an alert.
+// (Live version: email or push notification to the planners.)
+function alertNew(o) {
   const t = $('toast');
-  t.innerHTML = `<div class="t-head"><strong>${esc(title)}</strong><button type="button" id="toast-close">Close</button></div><div class="t-msg">${esc(msg)}</div>`;
+  t.innerHTML = `<div class="t-head"><strong>New order · ${esc(slotText(o.slot))}</strong><button type="button" id="toast-close">Close</button></div><div class="t-msg">${esc(o.who)}, ${esc(o.pc)}: ${o.volume.toFixed(1)} m³ ${esc(o.mix)}, ${esc(o.offload)}.</div>`;
   t.hidden = false;
   $('toast-close').addEventListener('click', () => { t.hidden = true; });
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { t.hidden = true; }, 12000);
 }
-// While the page is open, new orders and other planners' changes appear live.
-const alertNew = (o) => toastText(`New order · ${slotText(o.slot)}`, `${o.who}, ${o.pc}: ${o.volume.toFixed(1)} m³ ${o.mix}, ${o.offload}.`);
-function onLiveChange(o, isNew) {
-  const i = orders.findIndex((x) => x.id === o.id);
-  if (i >= 0) orders[i] = o; else orders.push(o);
+window.addEventListener('storage', () => {
+  const known = new Set(orders.map((o) => o.id));
+  orders = loadOrders();
   render();
-  if (isNew && !dialog.open) alertNew(o);
-}
+  const fresh = orders.filter((o) => !known.has(o.id));
+  if (fresh.length && !dialog.open) alertNew(fresh[fresh.length - 1]);
+});
 
 // ---------- Offer another time ----------
 
@@ -235,138 +227,4 @@ dialog.addEventListener('close', () => {
   offering = null;
 });
 
-// ---------- Sign in ----------
-
-// Invite and password-reset links arrive with #...type=invite or type=recovery: ask for a new password.
-let mode = /type=(invite|recovery)/.test(location.hash) ? 'set' : 'signin';
-let changing = false; // signed in and changing password from the inbox
-let watching = null;
-
-function showAuth(msg = '', ok = false) {
-  $('inbox').hidden = true;
-  $('auth').hidden = false;
-  const set = mode === 'set', reset = mode === 'reset';
-  $('auth-title').textContent = set && changing ? 'Change your password' : set ? 'Choose your password' : reset ? 'Reset your password' : 'Planner sign in';
-  $('auth-hint').textContent = set ? 'At least 8 characters. You use it with your email to sign in.' : reset ? 'We will email you a link to choose a new password.' : 'For SL Materials planners only.';
-  $('login-fields').hidden = set;
-  $('login-email').required = !set;
-  $('pw-fields').hidden = reset;
-  $('login-pw').required = !reset;
-  $('login-pw').autocomplete = set ? 'new-password' : 'current-password';
-  $('pw-label').textContent = set ? 'New password' : 'Password';
-  $('auth-submit').textContent = set ? 'Save password' : reset ? 'Send link' : 'Sign in';
-  $('forgot').textContent = reset ? 'Back to sign in' : 'Forgot password?';
-  $('forgot').hidden = set;
-  $('pw-cancel').hidden = !changing;
-  $('auth-msg').textContent = msg;
-  $('auth-msg').classList.toggle('ok', ok);
-}
-
-async function showInbox(session) {
-  $('auth').hidden = true;
-  $('inbox').hidden = false;
-  $('who').textContent = 'Signed in as ' + (session.user.email || '');
-  try { orders = await B.fetchOrders(); } catch (err) { toastText('Could not load orders', err.message || ''); }
-  render();
-  if (!watching) watching = B.watchOrders(onLiveChange);
-  refreshAlerts();
-}
-
-$('login-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = $('login-email').value.trim(), pw = $('login-pw').value;
-  $('auth-submit').disabled = true;
-  try {
-    if (mode === 'set') {
-      const { error } = await B.setPassword(pw);
-      // Same as the current password: it is already saved, so carry on.
-      if (error && error.code !== 'same_password') throw error;
-      // Saved: from now on this page signs in normally.
-      mode = 'signin';
-      changing = false;
-      history.replaceState(null, '', location.pathname);
-      const session = await B.getSession();
-      if (session) await showInbox(session);
-      else showAuth('Password saved. Sign in with your email and new password.', true);
-    } else if (mode === 'reset') {
-      const { error } = await B.sendReset(email);
-      if (error) throw error;
-      showAuth('If that email belongs to a planner, a link is on its way.', true);
-    } else {
-      if (!email) { showAuth('Enter your email and password.'); return; }
-      const { data, error } = await B.signIn(email, pw);
-      if (error) throw new Error('Email or password is not right.');
-      showInbox(data.session);
-    }
-  } catch (err) {
-    $('auth-msg').textContent = err.message || 'Something went wrong. Try again.';
-  } finally {
-    $('auth-submit').disabled = false;
-  }
-});
-
-$('forgot').addEventListener('click', () => { mode = mode === 'reset' ? 'signin' : 'reset'; showAuth(); });
-$('change-pw').addEventListener('click', () => {
-  mode = 'set'; changing = true;
-  $('login-pw').value = '';
-  showAuth();
-  $('login-pw').focus();
-});
-$('pw-cancel').addEventListener('click', async () => {
-  mode = 'signin'; changing = false;
-  showInbox(await B.getSession());
-});
-$('signout').addEventListener('click', async () => { await B.signOut(); location.reload(); });
-
-B.onAuth((event) => { if (event === 'PASSWORD_RECOVERY') { mode = 'set'; showAuth(); } });
-
-// ---------- Alerts on this device ----------
-
-async function refreshAlerts() {
-  const state = await B.pushState().catch(() => 'unsupported');
-  const btn = $('alerts-btn'), text = $('alerts-text');
-  $('alerts').classList.toggle('is-on', state === 'on');
-  btn.hidden = false;
-  if (state === 'on') {
-    text.textContent = 'On for this device. You will get a notification for every new order.';
-    btn.textContent = 'Turn off';
-    btn.className = 'btn btn-outline btn-sm';
-  } else if (state === 'blocked') {
-    text.textContent = 'Blocked in this browser. Allow notifications for this site in the browser settings, then reload.';
-    btn.hidden = true;
-  } else if (B.needsHomeScreen()) {
-    text.textContent = 'On iPhone: tap Share, then "Add to Home Screen", and open SL Planner from there to turn alerts on.';
-    btn.hidden = true;
-  } else if (state === 'unsupported') {
-    text.textContent = 'This browser cannot show alerts. Use Chrome, Edge, Firefox or Safari.';
-    btn.hidden = true;
-  } else {
-    text.textContent = 'Off for this device. Turn on to get a notification for every new order, even when this page is closed.';
-    btn.textContent = 'Turn on alerts';
-    btn.className = 'btn btn-green btn-sm';
-  }
-}
-
-$('alerts-btn').addEventListener('click', async () => {
-  $('alerts-btn').disabled = true;
-  try {
-    const on = (await B.pushState()) === 'on';
-    await (on ? B.disablePush() : B.enablePush());
-  } catch (err) {
-    toastText('Alerts not changed', err.message || '');
-  }
-  $('alerts-btn').disabled = false;
-  refreshAlerts();
-});
-
-// ---------- Start ----------
-
-(async () => {
-  // getSession waits until an invite or reset link has signed the planner in.
-  const session = await B.getSession();
-  if (mode === 'set') {
-    if (session) showAuth();
-    else { mode = 'reset'; showAuth('This link has expired. Enter your email to get a new one.'); }
-  } else if (session) showInbox(session);
-  else showAuth();
-})();
+render();

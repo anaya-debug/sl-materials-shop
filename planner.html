@@ -9,18 +9,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/tokens.css?v=202611121022">
-<link rel="stylesheet" href="css/site.css?v=202611121022">
-<link rel="stylesheet" href="css/planner.css?v=202611121022">
+<link rel="stylesheet" href="css/tokens.css?v=202611091830">
+<link rel="stylesheet" href="css/site.css?v=202611091830">
+<link rel="stylesheet" href="css/planner.css?v=202611091830">
 <link rel="icon" href="img/favicon-48.png" type="image/png" sizes="48x48">
-<link rel="manifest" href="planner.webmanifest">
-<link rel="apple-touch-icon" href="img/icon-512.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="SL Planner">
 </head>
 <body class="planner">
 
-<p class="preview-banner" role="note"><strong>Test phase.</strong> Nothing is sent to customers or charged yet.</p>
+<p class="preview-banner" role="note"><strong>Preview for review.</strong> Sample orders only. Nothing is sent to customers.</p>
 
 <header class="p-header">
   <div class="wrap p-bar">
@@ -32,35 +28,15 @@
   </div>
 </header>
 
-<main class="wrap p-main p-auth" id="auth" hidden>
-  <form class="card p-login" id="login-form">
-    <h1 id="auth-title">Planner sign in</h1>
-    <p class="hint" id="auth-hint">For SL Materials planners only.</p>
-    <div id="login-fields">
-      <label class="label" for="login-email">Email</label>
-      <input class="input" id="login-email" type="email" autocomplete="username" required>
-    </div>
-    <div id="pw-fields">
-      <label class="label" for="login-pw" id="pw-label">Password</label>
-      <input class="input" id="login-pw" type="password" autocomplete="current-password" minlength="8" required>
-    </div>
-    <p class="p-auth-msg" id="auth-msg" role="alert"></p>
-    <button type="submit" class="btn btn-green" id="auth-submit">Sign in</button>
-    <p><button type="button" class="link-btn" id="forgot">Forgot password?</button><button type="button" class="link-btn" id="pw-cancel" hidden>Cancel</button></p>
-  </form>
-</main>
-
-<main class="wrap p-main" id="inbox" hidden>
-  <div class="p-alerts" id="alerts">
-    <div><strong id="alerts-title">New order alerts</strong><span class="p-sub-line" id="alerts-text"></span></div>
-    <button type="button" class="btn btn-green btn-sm" id="alerts-btn" hidden></button>
-  </div>
-
+<main class="wrap p-main">
   <div class="p-intro">
     <h1>Order requests from the shop</h1>
     <p>Check the slot against the truck plan, then confirm, offer another time, or decline. The customer is notified and pays once confirmed.</p>
   </div>
 
+  <div class="p-notice" role="note">
+    <strong>Local preview.</strong> Orders are stored in this browser only and nothing is sent to customers. Orders you place in the <a href="index.html#quote-tool">shop</a> appear here.
+  </div>
 
   <div class="filters" role="group" aria-label="Show">
     <button type="button" class="seg" data-filter="all"></button>
@@ -96,10 +72,10 @@
     <div><span class="p-kicker">Offer other time</span><span>Pick a free slot from the truck plan; the customer accepts with one tap.</span></div>
     <div><span class="p-kicker">Pricing</span><span>Set by sales once. Planners never quote; they only say yes, no or another time. Pump hire is the exception: agree it with the customer.</span></div>
     <div><span class="p-kicker">Tomorrow's orders</span><span>No time to wait for a reply: phone the customer to agree any change.</span></div>
-    <div><span class="p-kicker">New order alerts</span><span>Turn on alerts above on each phone or computer you use. Every planner is alerted for every new order.</span></div>
+    <div><span class="p-kicker">New order alerts</span><span>Planners will get an email or phone notification for every new order once the shop is live. In this preview, an alert shows on this page.</span></div>
   </div>
 
-  <p class="p-reset"><span id="who"></span> · <button type="button" class="link-btn" id="change-pw">Change password</button> · <button type="button" class="link-btn" id="signout">Sign out</button></p>
+  <p class="p-reset"><button type="button" class="link-btn" id="reset">Reset to sample data</button></p>
 </main>
 
 <dialog id="offer" class="p-dialog" aria-labelledby="offer-title">
@@ -126,6 +102,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script type="module" src="js/planner.js?v=202611121022"></script>
+<script type="module" src="js/planner.js?v=202611091830"></script>
+<script src="demo-bar.js"></script>
 </body>
 </html>

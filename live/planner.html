@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Planner inbox | SL Materials</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/tokens.css?v=202611121208">
+<link rel="stylesheet" href="css/site.css?v=202611121208">
+<link rel="stylesheet" href="css/planner.css?v=202611121208">
+<link rel="icon" href="img/favicon-48.png" type="image/png" sizes="48x48">
+<link rel="manifest" href="planner.webmanifest">
+<link rel="apple-touch-icon" href="img/icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SL Planner">
+</head>
+<body class="planner">
+
+<p class="preview-banner" role="note"><strong>Test phase.</strong> Nothing is sent to customers or charged yet.</p>
+
+<header class="p-header">
+  <div class="wrap p-bar">
+    <div class="p-brand">
+      <img class="brand-logo" src="img/sl-logo.svg" alt="SL Materials" width="150" height="23">
+      <span class="p-sub">Planning · Small orders</span>
+    </div>
+    <div class="p-counts" aria-live="polite"><span id="c-waiting"></span><span id="c-confirmed"></span></div>
+  </div>
+</header>
+
+<main class="wrap p-main p-auth" id="auth" hidden>
+  <form class="card p-login" id="login-form">
+    <h1 id="auth-title">Planner sign in</h1>
+    <p class="hint" id="auth-hint">For SL Materials planners only.</p>
+    <div id="login-fields">
+      <label class="label" for="login-email">Email</label>
+      <input class="input" id="login-email" type="email" autocomplete="username" required>
+    </div>
+    <div id="pw-fields">
+      <label class="label" for="login-pw" id="pw-label">Password</label>
+      <input class="input" id="login-pw" type="password" autocomplete="current-password" minlength="8" required>
+    </div>
+    <p class="p-auth-msg" id="auth-msg" role="alert"></p>
+    <button type="submit" class="btn btn-green" id="auth-submit">Sign in</button>
+    <p><button type="button" class="link-btn" id="forgot">Forgot password?</button><button type="button" class="link-btn" id="pw-cancel" hidden>Cancel</button></p>
+  </form>
+</main>
+
+<main class="wrap p-main" id="inbox" hidden>
+  <div class="p-alerts" id="alerts">
+    <div><strong id="alerts-title">New order alerts</strong><span class="p-sub-line" id="alerts-text"></span></div>
+    <button type="button" class="btn btn-green btn-sm" id="alerts-btn" hidden></button>
+  </div>
+
+  <div class="p-intro">
+    <h1>Order requests from the shop</h1>
+    <p>Check the slot against the truck plan, then confirm, offer another time, or decline. The customer is notified and pays once confirmed.</p>
+  </div>
+
+
+  <div class="filters" role="group" aria-label="Show">
+    <button type="button" class="seg" data-filter="all"></button>
+    <button type="button" class="seg" data-filter="waiting"></button>
+    <button type="button" class="seg" data-filter="confirmed"></button>
+    <button type="button" class="seg" data-filter="offered"></button>
+    <button type="button" class="seg" data-filter="declined"></button>
+  </div>
+
+  <div class="p-table-wrap">
+    <table class="p-table">
+      <caption class="sr-only">Order requests, sorted by requested slot</caption>
+      <thead>
+        <tr>
+          <th scope="col">Requested slot</th>
+          <th scope="col">Customer</th>
+          <th scope="col">Job</th>
+          <th scope="col">Mix</th>
+          <th scope="col" class="num">Volume</th>
+          <th scope="col">Offload</th>
+          <th scope="col" class="num">Estimate excl. BTW</th>
+          <th scope="col">Status</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p id="empty" class="p-empty" hidden>Nothing here.</p>
+  </div>
+
+  <div class="p-info">
+    <div><span class="p-kicker">On confirm</span><span>Customer gets a text or WhatsApp with the slot and final price, and a link to pay.</span></div>
+    <div><span class="p-kicker">Offer other time</span><span>Pick a free slot from the truck plan; the customer accepts with one tap.</span></div>
+    <div><span class="p-kicker">Pricing</span><span>Set by sales once. Planners never quote; they only say yes, no or another time. Pump hire is the exception: agree it with the customer.</span></div>
+    <div><span class="p-kicker">Tomorrow's orders</span><span>No time to wait for a reply: phone the customer to agree any change.</span></div>
+    <div><span class="p-kicker">New order alerts</span><span>Turn on alerts above on each phone or computer you use. Every planner is alerted for every new order.</span></div>
+  </div>
+
+  <p class="p-reset"><span id="who"></span> · <button type="button" class="link-btn" id="change-pw">Change password</button> · <button type="button" class="link-btn" id="signout">Sign out</button></p>
+</main>
+
+<dialog id="offer" class="p-dialog" aria-labelledby="offer-title">
+  <form method="dialog" id="offer-form">
+    <h2 id="offer-title">Offer another time</h2>
+    <p class="hint" id="offer-for"></p>
+    <fieldset>
+      <legend class="label">Day</legend>
+      <div class="opts opts-days" id="offer-days"></div>
+    </fieldset>
+    <fieldset>
+      <legend class="label">Time</legend>
+      <div class="seg-group full" id="offer-times">
+        <button type="button" class="seg" data-time="am" aria-pressed="true">Morning 7–12</button>
+        <button type="button" class="seg" data-time="pm" aria-pressed="false">Afternoon 12–16</button>
+      </div>
+    </fieldset>
+    <div class="p-dialog-actions">
+      <button type="button" class="btn btn-outline btn-sm" value="cancel" id="offer-cancel">Cancel</button>
+      <button type="submit" class="btn btn-green btn-sm" id="offer-send" disabled>Send offer</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="js/planner.js?v=202611121208"></script>
+</body>
+</html>

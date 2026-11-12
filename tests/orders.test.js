@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import * as O from '../js/orders.js';
+import * as O from '../live/js/orders.js';
 
 const memoryStorage = () => {
   const m = new Map();
