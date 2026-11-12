@@ -1,9 +1,9 @@
-import { CONFIG } from './config.js?v=202611121022';
-import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611121022';
-import * as L from './logic.js?v=202611121022';
-import { orderFromShop } from './orders.js?v=202611121022';
-import { submitOrder } from './backend.js?v=202611121022';
-import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611121022';
+import { CONFIG } from './config.js?v=202611121210';
+import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611121210';
+import * as L from './logic.js?v=202611121210';
+import { orderFromShop } from './orders.js?v=202611121210';
+import { submitOrder } from './backend.js?v=202611121210';
+import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611121210';
 
 const P = CONFIG.pricing;
 const C = CONFIG.contact;
@@ -530,7 +530,7 @@ function sendToPlanners(d) {
   const at = new Date().toISOString();
   const day = getDays('en-GB').find((x) => x.key === d.dayObj.key) || d.dayObj;
   const mix = d.isProject ? (d.proj.mix || 'Advise') : d.code.code;
-  return submitOrder(orderFromShop({
+  const order = orderFromShop({
     id: 'web-' + crypto.randomUUID(),
     at,
     slot: { key: day.key, dow: day.dow, dm: day.dm, time: s.time },
@@ -541,7 +541,10 @@ function sendToPlanners(d) {
     volume: s.volume, offload: OFFLOADS.find((o) => o.id === s.offload)?.short, stone: d.stoneLabel, consistency: s.slump, fibres: s.fibres,
     extras: d.addOns.map((id) => ADD_ONS.find((a) => a.id === id).label),
     estimate: d.price.total, hold: d.price.hold,
-  }));
+  });
+  // Also show it in this visitor's planner preview (/preview/planner.html), so they can see what planners get.
+  import('../preview/js/orders.js').then((p) => p.addOrder(order)).catch(() => {});
+  return submitOrder(order);
 }
 
 // ---------- Events ----------

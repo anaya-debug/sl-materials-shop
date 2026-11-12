@@ -1,7 +1,7 @@
-// Demo switch bar: sits on top of the site (not part of its design) so people
-// reviewing the concept can jump between the shop and the planner inbox.
+// Preview switch bar: sits on top of the site (not part of its design) so people
+// trying the shop can also see what the planners see (a no-login preview).
 (() => {
-  const onPlanner = /planner\.html$/.test(location.pathname);
+  const onPlanner = /\/preview\//.test(location.pathname);
   const css = `
     .demo-bar { position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%);
       z-index: 2147483000; display: flex; align-items: center; gap: 6px; padding: 6px;
@@ -26,7 +26,7 @@
   bar.setAttribute('aria-label', 'Concept preview');
   bar.innerHTML = `
     <span class="demo-label">Concept preview</span>
-    <a href="index.html" ${onPlanner ? '' : 'aria-current="page"'}>Customer shop</a>
-    <a href="planner.html" ${onPlanner ? 'aria-current="page"' : ''}>Planner inbox</a>`;
+    <a href="/" ${onPlanner ? '' : 'aria-current="page"'}>Customer shop</a>
+    <a href="/preview/planner.html" ${onPlanner ? 'aria-current="page"' : ''}>Planner preview</a>`;
   document.body.appendChild(bar);
 })();
