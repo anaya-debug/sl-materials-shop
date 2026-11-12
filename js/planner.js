@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js?v=202611112111';
-import { formatEUR, nextDeliveryDays } from './logic.js?v=202611112111';
-import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611112111';
-import * as B from './backend.js?v=202611112111';
+import { CONFIG } from './config.js?v=202611121022';
+import { formatEUR, nextDeliveryDays } from './logic.js?v=202611121022';
+import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611121022';
+import * as B from './backend.js?v=202611121022';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => formatEUR(n, CONFIG.locale);
@@ -239,13 +239,14 @@ dialog.addEventListener('close', () => {
 
 // Invite and password-reset links arrive with #...type=invite or type=recovery: ask for a new password.
 let mode = /type=(invite|recovery)/.test(location.hash) ? 'set' : 'signin';
+let changing = false; // signed in and changing password from the inbox
 let watching = null;
 
 function showAuth(msg = '', ok = false) {
   $('inbox').hidden = true;
   $('auth').hidden = false;
   const set = mode === 'set', reset = mode === 'reset';
-  $('auth-title').textContent = set ? 'Choose your password' : reset ? 'Reset your password' : 'Planner sign in';
+  $('auth-title').textContent = set && changing ? 'Change your password' : set ? 'Choose your password' : reset ? 'Reset your password' : 'Planner sign in';
   $('auth-hint').textContent = set ? 'At least 8 characters. You use it with your email to sign in.' : reset ? 'We will email you a link to choose a new password.' : 'For SL Materials planners only.';
   $('login-fields').hidden = set;
   $('login-email').required = !set;
@@ -256,6 +257,7 @@ function showAuth(msg = '', ok = false) {
   $('auth-submit').textContent = set ? 'Save password' : reset ? 'Send link' : 'Sign in';
   $('forgot').textContent = reset ? 'Back to sign in' : 'Forgot password?';
   $('forgot').hidden = set;
+  $('pw-cancel').hidden = !changing;
   $('auth-msg').textContent = msg;
   $('auth-msg').classList.toggle('ok', ok);
 }
@@ -281,6 +283,7 @@ $('login-form').addEventListener('submit', async (e) => {
       if (error && error.code !== 'same_password') throw error;
       // Saved: from now on this page signs in normally.
       mode = 'signin';
+      changing = false;
       history.replaceState(null, '', location.pathname);
       const session = await B.getSession();
       if (session) await showInbox(session);
@@ -303,6 +306,16 @@ $('login-form').addEventListener('submit', async (e) => {
 });
 
 $('forgot').addEventListener('click', () => { mode = mode === 'reset' ? 'signin' : 'reset'; showAuth(); });
+$('change-pw').addEventListener('click', () => {
+  mode = 'set'; changing = true;
+  $('login-pw').value = '';
+  showAuth();
+  $('login-pw').focus();
+});
+$('pw-cancel').addEventListener('click', async () => {
+  mode = 'signin'; changing = false;
+  showInbox(await B.getSession());
+});
 $('signout').addEventListener('click', async () => { await B.signOut(); location.reload(); });
 
 B.onAuth((event) => { if (event === 'PASSWORD_RECOVERY') { mode = 'set'; showAuth(); } });
