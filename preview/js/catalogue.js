@@ -44,8 +44,8 @@ export const OFFLOADS = [
     nl: { label: 'Kruiwagen', sub: 'Je rijdt het zelf weg vanaf de truck' } },
   { id: 'pumpown', label: 'Pump, I arrange it', sub: 'Your own pump on site', short: 'Own pump',
     nl: { label: 'Pomp, zelf geregeld', sub: 'Je eigen pomp op locatie' } },
-  { id: 'pumpsl', label: 'Pump, SL arranges it', sub: 'Charged separately · we get in touch', short: 'Pump (SL)',
-    nl: { label: 'Pomp, via SL', sub: 'Apart berekend · wij nemen contact op' } },
+  { id: 'pumpsl', label: 'Pump, SL arranges it', sub: 'Charged separately', short: 'Pump (SL)',
+    nl: { label: 'Pomp, via SL', sub: 'Apart berekend' } },
 ];
 
 export const CONSISTENCY = [
