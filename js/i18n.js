@@ -2,15 +2,16 @@
 // Static page text carries its Dutch version in data-nl attributes; the order tool
 // uses tx('English', 'Nederlands'). The choice is remembered in this browser.
 
-const KEY = 'sl-shop-lang';
+// v2 (16 Nov 2026): Dutch became the default, so earlier saved choices start fresh.
+const KEY = 'sl-shop-lang-v2';
 export const LANGS = ['nl', 'en'];
 
 function initial() {
   const fromUrl = new URLSearchParams(location.search).get('lang');
   if (LANGS.includes(fromUrl)) return fromUrl;
   try { const saved = localStorage.getItem(KEY); if (LANGS.includes(saved)) return saved; } catch { /* storage blocked */ }
-  // Dutch for Dutch browsers, English for everyone else.
-  return (navigator.language || '').toLowerCase().startsWith('nl') ? 'nl' : 'en';
+  // Dutch by default; visitors can switch to English with the EN button.
+  return 'nl';
 }
 
 let lang = initial();

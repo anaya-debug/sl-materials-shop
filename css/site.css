@@ -341,3 +341,11 @@ input[type=range] { flex: 1 1 auto; accent-color: var(--ink); height: 32px; min-
 
 /* Anything marked hidden stays hidden, whatever its layout rule says. */
 [hidden] { display: none !important; }
+
+/* Flags on the NL / EN buttons (16 Nov). The flag is decoration; the button name says the language. */
+.lang-toggle button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.lang-toggle .flag { width: 18px; height: 12px; border-radius: 2px; flex: 0 0 auto; box-shadow: 0 0 0 1px rgba(255,255,255,.25); }
+@media (max-width: 599px) {
+  .lang-toggle button { width: auto; min-width: 40px; padding: 0 10px; gap: 5px; }
+  .lang-toggle .lang-code { font-size: 12px; }
+}

@@ -22,10 +22,17 @@
   const nav = document.createElement('nav');
   nav.className = 'demo-switch';
   nav.setAttribute('aria-label', 'Switch preview');
-  nav.innerHTML = `
-    <span class="demo-label">View:</span>
-    <a href="/" ${onPlanner ? '' : 'aria-current="page"'}>Customer shop</a>
-    <a href="/preview/planner.html" ${onPlanner ? 'aria-current="page"' : ''}>Planner preview</a>`;
+  // Follows the page language (the shop switches <html lang> between nl and en).
+  const draw = () => {
+    const nl = document.documentElement.lang === 'nl';
+    nav.setAttribute('aria-label', nl ? 'Wissel weergave' : 'Switch preview');
+    nav.innerHTML = `
+    <span class="demo-label">${nl ? 'Bekijk:' : 'View:'}</span>
+    <a href="/" ${onPlanner ? '' : 'aria-current="page"'}>${nl ? 'Klantenwebshop' : 'Customer shop'}</a>
+    <a href="/preview/planner.html" ${onPlanner ? 'aria-current="page"' : ''}>${nl ? 'Planner-preview' : 'Planner preview'}</a>`;
+  };
+  draw();
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
   const banner = document.querySelector('.preview-banner');
   if (banner) {

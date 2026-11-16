@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js?v=202611161020';
-import { formatEUR, nextDeliveryDays } from './logic.js?v=202611161020';
-import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611161020';
-import * as B from './backend.js?v=202611161020';
+import { CONFIG } from './config.js?v=202611161023';
+import { formatEUR, nextDeliveryDays } from './logic.js?v=202611161023';
+import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611161023';
+import * as B from './backend.js?v=202611161023';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => formatEUR(n, CONFIG.locale);
