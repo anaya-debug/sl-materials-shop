@@ -48,7 +48,6 @@ test('price: big orders split evenly over trucks', () => {
 test('price: stone size and fibres per m³', () => {
   const base = total({ volume: 2 });
   assert.equal(total({ volume: 2, stone: 'fine' }), base + 15.2);
-  assert.equal(total({ volume: 2, stone: 'mid' }), base + 15.2);
   assert.equal(line({ volume: 2 }, 'stone').state, 'included');
   assert.equal(total({ volume: 2, fibres: true }), base + 16);
 });
@@ -61,9 +60,10 @@ test('price: extras per m³', () => {
   assert.equal(line({ volume: 2 }, 'extras').state, 'none');
 });
 
-test('price: pump arranged by SL is priced (flat + per m³)', () => {
-  assert.equal(line({ volume: 3, offload: 'pumpsl' }, 'pump').amount, 439.5 + 3 * 12.8);
-  assert.equal(total({ volume: 3, offload: 'pumpsl' }), 571.5 + 477.9);   // them 1106
+test('price: pump arranged by SL is €560 per order, any volume', () => {
+  assert.equal(line({ volume: 3, offload: 'pumpsl' }, 'pump').amount, 560);
+  assert.equal(line({ volume: 12, offload: 'pumpsl' }, 'pump').amount, 560);
+  assert.equal(total({ volume: 3, offload: 'pumpsl' }), 571.5 + 560);
 });
 
 test('price: BTW and the hold (always incl. BTW, plus the 15% allowance)', () => {

@@ -20,7 +20,8 @@ export const CONFIG = {
     bulk: { fromM3: 10, perM3: 143.5 },
 
     // Extra per m³ by stone size (theirs: fine gravel +€8).
-    stoneAddPerM3: { std: 0, mid: 7.6, fine: 7.6 },
+    // Two sizes since 16 Nov: standard 4–32 mm and fine 4–16 mm.
+    stoneAddPerM3: { std: 0, fine: 7.6 },
     // Extras per m³ (theirs: high strength +€11, fast-setting +€5, highly fluid +€4.50).
     addOnsPerM3: { highStrength: 10.45, fastSetting: 4.75 },
     consistencyAddPerM3: { S1: 0, S2: 0, S3: 0, S4: 4.28 },
@@ -40,8 +41,8 @@ export const CONFIG = {
     // No separate part-load charge any more: the delivery charge covers small loads.
     partLoad: null,
 
-    // Pump arranged by SL (theirs: trailer pump €462.50 + €13.50/m³ for a pumpable mix).
-    pumpBySL: { flat: 439.5, perM3: 12.8 },
+    // Pump arranged by SL: €560 per order excl. BTW, any volume (meeting 16 Nov).
+    pumpBySL: { flat: 560, perM3: 0 },
 
     // Not set yet:
     saturdaySurcharge: null,

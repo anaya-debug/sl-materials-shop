@@ -1,9 +1,9 @@
-import { CONFIG } from './config.js?v=202611161150';
-import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611161150';
-import * as L from './logic.js?v=202611161150';
-import { orderFromShop } from './orders.js?v=202611161150';
-import { submitOrder } from './backend.js?v=202611161150';
-import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611161150';
+import { CONFIG } from './config.js?v=202611161238';
+import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611161238';
+import * as L from './logic.js?v=202611161238';
+import { orderFromShop } from './orders.js?v=202611161238';
+import { submitOrder } from './backend.js?v=202611161238';
+import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611161238';
 
 const P = CONFIG.pricing;
 const C = CONFIG.contact;
@@ -197,8 +197,8 @@ function offloadNote() {
     </div>`;
   }
   if (s.offload === 'pumpsl') {
-    return `<div class="note-green" role="status">${tx('<strong>We\'ll arrange the pump.</strong> A trailer pump with up to 5 m of hose is in the price. For a longer hose or a boom pump, a planner will agree the price with you before anything is booked.',
-      '<strong>Wij regelen de pomp.</strong> Een aanhangerpomp met tot 5 m slang zit in de prijs. Voor een langere slang of een giekpomp spreekt een planner de prijs met je af voordat er iets wordt geboekt.')}</div>`;
+    return `<div class="note-green" role="status">${tx('<strong>We\'ll arrange the pump.</strong> Pump hire is €560 excl. BTW per delivery, shown as its own line in your price. If your site needs a boom pump, a planner will agree it with you before anything is booked.',
+      '<strong>Wij regelen de pomp.</strong> De pomphuur is €560 excl. btw per levering en staat als aparte regel in je prijs. Is er op jouw locatie een giekpomp nodig? Dan spreekt een planner dat met je af voordat er iets wordt geboekt.')}</div>`;
   }
   if (s.offload === 'pumpown') {
     return `<div class="note-green" role="status">${tx('Pumping needs a fluid mix, so choose S3 or S4 below. Your pump should be set up when the truck arrives.',
@@ -266,9 +266,9 @@ function step2(d) {
 
     <div class="field-group" role="group" aria-labelledby="st-l">
       <div style="display:flex;align-items:center;gap:10px"><span class="label" id="st-l">${tx('Stone size', 'Korrelgrootte grind')}</span><button type="button" class="link-btn" style="font-weight:400;font-size:14px" data-toggle="showStoneHelp" data-key="t-stone" aria-expanded="${s.showStoneHelp}">${tx("What's this?", 'Wat is dit?')}</button></div>
-      <div class="opts opts-3">${STONE_SIZES.map((x) => opt('stone', x.id, s.stone === x.id, x.label, stoneSub(x))).join('')}</div>
-      ${s.showStoneHelp ? `<div class="help">${tx('The gravel in the mix. Standard 4–32 mm is the most economical and suits most jobs. Smaller stone is easier to work by hand, finishes smoother and fills tight spaces, but needs a little more cement.',
-        'Het grind in het mengsel. Standaard 4–32 mm is het voordeligst en past bij de meeste klussen. Fijner grind is makkelijker met de hand te verwerken, wordt gladder en vult krappe ruimtes, maar heeft iets meer cement nodig.')}</div>` : ''}
+      <div class="opts opts-2">${STONE_SIZES.map((x) => opt('stone', x.id, s.stone === x.id, x.label, stoneSub(x))).join('')}</div>
+      ${s.showStoneHelp ? `<div class="help">${tx('The gravel in the mix. Standard 4–32 mm is the most economical and suits most jobs. Fine 4–16 mm is easier to work by hand, finishes smoother and fills tight spaces, but needs a little more cement.',
+        'Het grind in het mengsel. Standaard 4–32 mm is het voordeligst en past bij de meeste klussen. Fijn grind (4–16 mm) is makkelijker met de hand te verwerken, wordt gladder en vult krappe ruimtes, maar heeft iets meer cement nodig.')}</div>` : ''}
     </div>
 
     ${P.offerFibres ? `<label class="check"><input type="checkbox" data-field="fibres" data-key="fibres" ${s.fibres ? 'checked' : ''}>

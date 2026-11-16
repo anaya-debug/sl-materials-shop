@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js?v=202611161020';
-import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611161020';
-import * as L from './logic.js?v=202611161020';
-import { addOrder, orderFromShop } from './orders.js?v=202611161020';
+import { CONFIG } from './config.js?v=202611161238';
+import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611161238';
+import * as L from './logic.js?v=202611161238';
+import { addOrder, orderFromShop } from './orders.js?v=202611161238';
 import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611091830';
 
 const P = CONFIG.pricing;

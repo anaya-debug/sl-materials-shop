@@ -20,7 +20,8 @@ export const CONFIG = {
     bulk: { fromM3: 10, perM3: 143.5 },
 
     // Extra per m³ by stone size (theirs: fine gravel +€8).
-    stoneAddPerM3: { std: 0, mid: 7.6, fine: 7.6 },
+    // Two sizes since 16 Nov: standard 4–32 mm and fine 4–16 mm.
+    stoneAddPerM3: { std: 0, fine: 7.6 },
     // Extras per m³ (theirs: high strength +€11, fast-setting +€5, highly fluid +€4.50).
     addOnsPerM3: { highStrength: 10.45, fastSetting: 4.75 },
     consistencyAddPerM3: { S1: 0, S2: 0, S3: 0, S4: 4.28 },
@@ -31,6 +32,8 @@ export const CONFIG = {
 
     // SUGGESTED: polypropylene micro-fibres usually add €5–10 per m³ (competitor does not list fibres).
     fibresPerM3: 8,
+    // Fibres hidden for now (meeting 16 Nov: price unclear, launch lean). Set true to offer them again.
+    offerFibres: false,
 
     // Trucks carry up to 12 m³. A bigger order is split evenly over the fewest trucks.
     truckM3: 12,
@@ -38,8 +41,8 @@ export const CONFIG = {
     // No separate part-load charge any more: the delivery charge covers small loads.
     partLoad: null,
 
-    // Pump arranged by SL (theirs: trailer pump €462.50 + €13.50/m³ for a pumpable mix).
-    pumpBySL: { flat: 439.5, perM3: 12.8 },
+    // Pump arranged by SL: €560 per order excl. BTW, any volume (meeting 16 Nov).
+    pumpBySL: { flat: 560, perM3: 0 },
 
     // Not set yet:
     saturdaySurcharge: null,
@@ -60,7 +63,9 @@ export const CONFIG = {
     // Rough area around Zaandam (to confirm). First four digits of the postcode.
     postcodeRanges: [[1000, 1199], [1300, 1999], [2000, 2199]],
     daysShown: 6,
-    nextDayCutoff: '11:00',    // 24-hour clock; after this, tomorrow is not offered
+    // Saturday delivery hidden until SL sets a Saturday price (decided 16 Nov).
+    saturday: false,
+    nextDayCutoff: '12:00',    // 24-hour clock; after this, tomorrow is not offered (meeting 16 Nov: match competitor)
     radiusKm: 30,
   },
 

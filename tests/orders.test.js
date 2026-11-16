@@ -25,7 +25,7 @@ test('samples: estimates use the full shop price (delivery and pump included)', 
   assert.equal(est['sample-a'], 511.75);  // 2.5 m³: 2.5 × 119.50 + 213
   assert.equal(est['sample-b'], 930);     // 6 m³: 6 × 119.50 + 213
   assert.equal(est['sample-c'], 392.25);  // 1.5 m³
-  assert.equal(est['sample-d'], 1072.2);  // 3 m³ fine stone + SL pump (439.50 + 3 × 12.80)
+  assert.equal(est['sample-d'], 1154.3);  // 3 m³ fine stone + SL pump (€560)
   assert.equal(est['sample-e'], 750.75);  // 4.5 m³
 });
 

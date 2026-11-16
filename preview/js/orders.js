@@ -2,8 +2,8 @@
 // For now they live in this browser only (localStorage), so the team can try the
 // whole flow locally. A real backend replaces load/save later; the rest stays.
 
-import { CONFIG } from './config.js?v=202611161020';
-import { nextDeliveryDays, formatEUR, round2, priceOrder, withVat } from './logic.js?v=202611161020';
+import { CONFIG } from './config.js?v=202611161238';
+import { nextDeliveryDays, formatEUR, round2, priceOrder, withVat } from './logic.js?v=202611161238';
 
 const KEY = 'sl-shop-orders-v2'; // v2: prices from the 9 Nov review
 
@@ -108,7 +108,7 @@ export function sampleOrders(today = new Date()) {
   const mk = (id, s, who, name, pc, contact, job, note, mix, volume, offload, estimate) => ({
     id, createdAt: at, updatedAt: at, source: 'sample', status: 'waiting', offeredSlot: null,
     slot: s, who, name, phone: '', email: '', contact, pc, job, note, mix, volume, offload,
-    stone: id === 'sample-d' ? '2–8 mm' : '4–32 mm', consistency: id === 'sample-d' ? 'S4' : 'S3', fibres: false, estimate, hold: round2(withVat(estimate, CONFIG.pricing.vatPct) * (1 + CONFIG.pricing.contingencyPct / 100)),
+    stone: id === 'sample-d' ? '4–16 mm' : '4–32 mm', consistency: id === 'sample-d' ? 'S4' : 'S3', fibres: false, estimate, hold: round2(withVat(estimate, CONFIG.pricing.vatPct) * (1 + CONFIG.pricing.contingencyPct / 100)),
   });
   return [
     { ...mk('sample-a', slot(0, 'am'), 'Homeowner', 'Anna', '1013', 'WhatsApp', 'Rough concrete floor', 'Gate 1.2 m wide', 'C20/25', 2.5, 'Wheelbarrow', est(2.5)), phone: '+31 6 12 34 56 78' },

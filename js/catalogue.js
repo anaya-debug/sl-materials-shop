@@ -57,8 +57,8 @@ export const CONSISTENCY = [
 
 export const STONE_SIZES = [
   { id: 'std', label: '4–32 mm', sub: 'Standard', nl: { sub: 'Standaard' } },
-  { id: 'mid', label: '4–16 mm' },
-  { id: 'fine', label: '2–8 mm' },
+  // 2–8 mm dropped (meeting 16 Nov: may not be available). Fine is now 4–16 mm.
+  { id: 'fine', label: '4–16 mm', sub: 'Fine', nl: { sub: 'Fijn' } },
 ];
 
 export const QUOTE_PROJECT_TYPES = [
