@@ -1,9 +1,9 @@
-import { CONFIG } from './config.js?v=202611161023';
-import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611161023';
-import * as L from './logic.js?v=202611161023';
-import { orderFromShop } from './orders.js?v=202611161023';
-import { submitOrder } from './backend.js?v=202611161023';
-import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611161023';
+import { CONFIG } from './config.js?v=202611161111';
+import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611161111';
+import * as L from './logic.js?v=202611161111';
+import { orderFromShop } from './orders.js?v=202611161111';
+import { submitOrder } from './backend.js?v=202611161111';
+import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611161111';
 
 const P = CONFIG.pricing;
 const C = CONFIG.contact;
@@ -31,6 +31,7 @@ function fillSlots() {
     quoteTime: orTbd(CONFIG.responseTimes.quote, tx('response time', 'reactietijd'), (v) => esc(tx(v, CONFIG.responseTimes.quoteNl))),
     tradeTerms: orTbd(C.tradePaymentTerms, tx('payment terms', 'betaaltermijn')),
     radius: orTbd(CONFIG.delivery.radiusKm, tx('radius', 'straal')),
+    cutoff: orTbd(CONFIG.delivery.nextDayCutoff, tx('cut-off time', 'besteltijd')),
   };
   const tradeSubject = tx('Trade enquiry', 'Zakelijke aanvraag');
   const tradeBody = tx(
@@ -267,8 +268,8 @@ function step2(d) {
         'Het grind in het mengsel. Standaard 4–32 mm is het voordeligst en past bij de meeste klussen. Fijner grind is makkelijker met de hand te verwerken, wordt gladder en vult krappe ruimtes, maar heeft iets meer cement nodig.')}</div>` : ''}
     </div>
 
-    <label class="check"><input type="checkbox" data-field="fibres" data-key="fibres" ${s.fibres ? 'checked' : ''}>
-      <span><strong>${tx('Add fibres', 'Vezels toevoegen')}</strong> (${orTbd(P.fibresPerM3, tx('fibre price', 'vezelprijs'), pm)} ${tx('per m³', 'per m³')} ${vatLabel()}). ${tx('Helps limit shrinkage cracks, useful over underfloor heating.', 'Beperkt krimpscheuren, handig boven vloerverwarming.')}</span></label>`;
+    ${P.offerFibres ? `<label class="check"><input type="checkbox" data-field="fibres" data-key="fibres" ${s.fibres ? 'checked' : ''}>
+      <span><strong>${tx('Add fibres', 'Vezels toevoegen')}</strong> (${orTbd(P.fibresPerM3, tx('fibre price', 'vezelprijs'), pm)} ${tx('per m³', 'per m³')} ${vatLabel()}). ${tx('Helps limit shrinkage cracks, useful over underfloor heating.', 'Beperkt krimpscheuren, handig boven vloerverwarming.')}</span></label>` : ''}`;
 }
 
 function step3(d) {
@@ -364,7 +365,7 @@ function summary(d) {
     [`${esc(d.mixLabel)} · ${m3(s.volume)}`, show(line.concrete)],
     [tx('Stone size', 'Korrelgrootte'), show(line.stone)],
     [tx('Extras', 'Toevoegingen'), show(line.extras)],
-    [tx('Fibres', 'Vezels'), show(line.fibres, tx('fibre price', 'vezelprijs'))],
+    ...(P.offerFibres ? [[tx('Fibres', 'Vezels'), show(line.fibres, tx('fibre price', 'vezelprijs'))]] : []),
     [tx('Pump', 'Pomp'), show(line.pump)],
     ...(P.partLoad ? [[plLabel, show(line.partLoad, tx('to agree', 'af te spreken'))]] : []),
     [deliveryLabel, deliveryValue],

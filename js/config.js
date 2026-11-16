@@ -31,6 +31,8 @@ export const CONFIG = {
 
     // SUGGESTED: polypropylene micro-fibres usually add €5–10 per m³ (competitor does not list fibres).
     fibresPerM3: 8,
+    // Fibres hidden for now (meeting 16 Nov: price unclear, launch lean). Set true to offer them again.
+    offerFibres: false,
 
     // Trucks carry up to 12 m³. A bigger order is split evenly over the fewest trucks.
     truckM3: 12,
@@ -60,7 +62,7 @@ export const CONFIG = {
     // Rough area around Zaandam (to confirm). First four digits of the postcode.
     postcodeRanges: [[1000, 1199], [1300, 1999], [2000, 2199]],
     daysShown: 6,
-    nextDayCutoff: '11:00',    // 24-hour clock; after this, tomorrow is not offered
+    nextDayCutoff: '12:00',    // 24-hour clock; after this, tomorrow is not offered (meeting 16 Nov: match competitor)
     radiusKm: 30,
   },
 
