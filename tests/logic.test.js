@@ -7,77 +7,87 @@ const VOL = CONFIG.volume;
 const RANGES = CONFIG.delivery.postcodeRanges;
 const P = CONFIG.pricing;
 
-// Preview prices: €120/m³, part load €35 per m³ short of 8 m³ per truck, €95 per truck, 12 m³ trucks.
+// Prices (16 Nov 2026, ~5% under ikwilbetonbestellen.nl): €119.50/m³ + €213 delivery under 10 m³,
+// €143.50/m³ all-in from 10 m³.
 const total = (o, p = P) => L.priceOrder(o, p).total;
 const line = (o, key, p = P) => L.priceOrder(o, p).lines.find((l) => l.key === key);
 
-test('price: concrete, part load and delivery', () => {
-  assert.equal(total({ volume: 1 }), 120 + 7 * 35 + 95);       // 460
-  assert.equal(total({ volume: 2.5 }), 300 + 5.5 * 35 + 95);   // 587.5
-  assert.equal(total({ volume: 8 }), 960 + 95);                 // full enough: no part load
-  assert.equal(line({ volume: 8 }, 'partLoad').state, 'none');
+test('price: matches the agreed table (about 5% under the competitor)', () => {
+  assert.equal(total({ volume: 1 }), 332.5);     // them 351
+  assert.equal(total({ volume: 3 }), 571.5);     // them 603
+  assert.equal(total({ volume: 6 }), 930);       // them 981
+  assert.equal(total({ volume: 8 }), 1169);      // them 1233
+  assert.equal(total({ volume: 9.5 }), 1348.25);
+  assert.equal(total({ volume: 10 }), 1435);     // them 1510
+  assert.equal(total({ volume: 12 }), 1722);     // them 1812
 });
 
-test('price: part load costs more the smaller the order', () => {
-  const pl = (v) => line({ volume: v }, 'partLoad').amount;
-  assert.ok(pl(1) > pl(4) && pl(4) > pl(7));
-  assert.equal(pl(7), 35);
+test('price: about 5% under the competitor at every size', () => {
+  const theirs = (v) => (v < 10 ? 126 * v + 225 : 151 * v);
+  for (const v of [1, 2, 3, 4.5, 6, 8, 9, 10, 12, 16, 24]) {
+    const ratio = total({ volume: v }) / theirs(v);
+    assert.ok(ratio > 0.94 && ratio < 0.96, `${v} m³: ${ratio}`);
+  }
+});
+
+test('price: delivery is one charge under 10 m³ and included from 10 m³', () => {
+  assert.equal(line({ volume: 3 }, 'delivery').amount, 213);
+  assert.equal(line({ volume: 9.5 }, 'delivery').state, 'priced');
+  assert.equal(line({ volume: 10 }, 'delivery').state, 'included');
+  assert.equal(line({ volume: 3 }, 'partLoad').state, 'none');
 });
 
 test('price: big orders split evenly over trucks', () => {
   assert.deepEqual(L.splitTrucks(12, 12), { trucks: 1, perTruck: 12 });
   assert.deepEqual(L.splitTrucks(14, 12), { trucks: 2, perTruck: 7 });
   assert.deepEqual(L.splitTrucks(48, 12), { trucks: 4, perTruck: 12 });
-  // 14 m³ = 2 × 7 m³: each truck is 1 m³ short of 8, plus 2 delivery charges.
-  assert.equal(total({ volume: 14 }), 1680 + 2 * 35 + 2 * 95);
   assert.equal(line({ volume: 14 }, 'delivery').trucks, 2);
-  assert.equal(total({ volume: 24 }), 2880 + 2 * 95);
-  // Buying a little extra never jumps the price unfairly: 13 m³ costs less than 12 m³ + a separate 1 m³ order.
-  assert.ok(total({ volume: 13 }) < total({ volume: 12 }) + total({ volume: 1 }));
+  assert.equal(total({ volume: 14 }), 14 * 143.5);
 });
 
 test('price: stone size and fibres per m³', () => {
   const base = total({ volume: 2 });
-  assert.equal(total({ volume: 2, stone: 'mid' }), base + 17);
-  assert.equal(total({ volume: 2, stone: 'fine' }), base + 28);
+  assert.equal(total({ volume: 2, stone: 'fine' }), base + 15.2);
+  assert.equal(total({ volume: 2, stone: 'mid' }), base + 15.2);
   assert.equal(line({ volume: 2 }, 'stone').state, 'included');
   assert.equal(total({ volume: 2, fibres: true }), base + 16);
 });
 
-test('price: old-shop extras per m³', () => {
+test('price: extras per m³', () => {
   const base = total({ volume: 2 });
-  assert.equal(total({ volume: 2, addOns: ['highStrength'] }), base + 14.3);
-  assert.equal(total({ volume: 2, addOns: ['highStrength', 'fastSetting'] }), base + 25.3);
-  assert.equal(total({ volume: 2, consistency: 'S4' }), base + 6);
+  assert.equal(total({ volume: 2, addOns: ['highStrength'] }), base + 20.9);
+  assert.equal(total({ volume: 2, addOns: ['highStrength', 'fastSetting'] }), base + 30.4);
+  assert.equal(total({ volume: 2, consistency: 'S4' }), base + 8.56);
   assert.equal(line({ volume: 2 }, 'extras').state, 'none');
+});
+
+test('price: pump arranged by SL is priced (flat + per m³)', () => {
+  assert.equal(line({ volume: 3, offload: 'pumpsl' }, 'pump').amount, 439.5 + 3 * 12.8);
+  assert.equal(total({ volume: 3, offload: 'pumpsl' }), 571.5 + 477.9);   // them 1106
 });
 
 test('price: BTW and the hold (always incl. BTW, plus the 15% allowance)', () => {
   const p = L.priceOrder({ volume: 2 }, P);
-  assert.equal(p.total, 545);          // excl. BTW
-  assert.equal(p.vat, 114.45);         // 21%
-  assert.equal(p.totalIncl, 659.45);
-  assert.equal(p.contingency, 98.92);
-  assert.equal(p.hold, 758.37);
+  assert.equal(p.total, 452);          // excl. BTW
+  assert.equal(p.vat, 94.92);          // 21%
+  assert.equal(p.totalIncl, 546.92);
+  assert.equal(p.contingency, 82.04);
+  assert.equal(p.hold, 628.96);
   assert.equal(L.withVat(120, 21), 145.2);
 });
 
 test('price: unagreed extras are flagged, not counted', () => {
-  const p = L.priceOrder({ volume: 2, offload: 'pumpsl', saturday: true }, P);
+  const p = L.priceOrder({ volume: 2, offload: 'pumpsl', saturday: true }, { ...P, pumpBySL: null });
   const st = Object.fromEntries(p.lines.map((l) => [l.key, l.state]));
   assert.equal(st.pump, 'onConfirm');
   assert.equal(st.saturday, 'tbd');
-  assert.equal(p.total, 545);
-  const unset = { ...P, partLoad: { underM3: null, perM3Short: null }, deliveryPerTruck: null };
-  const u = L.priceOrder({ volume: 2 }, unset);
-  assert.equal(u.lines.find((l) => l.key === 'partLoad').state, 'tbd');
-  assert.equal(u.lines.find((l) => l.key === 'delivery').state, 'tbd');
-  assert.equal(u.total, 240);
+  assert.equal(p.total, 452);
 });
 
-test('price: agreed extras are counted once set in config', () => {
-  const agreed = { ...P, pumpBySL: 250, saturdaySurcharge: 75 };
-  assert.equal(total({ volume: 2, offload: 'pumpsl', saturday: true }, agreed), 545 + 250 + 75);
+test('price: older model (part load + per-truck delivery) still works if switched back', () => {
+  const old = { ...P, bulk: null, deliveryUnderBulk: null, basePerM3: 120, partLoad: { underM3: 8, perM3Short: 35 }, deliveryPerTruck: 95 };
+  assert.equal(total({ volume: 1 }, old), 120 + 7 * 35 + 95);
+  assert.equal(total({ volume: 2, saturday: true }, { ...old, saturdaySurcharge: 75 }), 240 + 6 * 35 + 95 + 75);
 });
 
 test('pumping: only fluid mixes, wheelbarrow loads, cut-off', () => {

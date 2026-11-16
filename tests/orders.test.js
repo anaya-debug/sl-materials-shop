@@ -20,13 +20,13 @@ test('samples: five waiting orders, dated after today, no Sundays or Saturdays',
   }
 });
 
-test('samples: estimates use the full shop price (part load and delivery included)', () => {
+test('samples: estimates use the full shop price (delivery and pump included)', () => {
   const est = Object.fromEntries(O.sampleOrders().map((o) => [o.id, o.estimate]));
-  assert.equal(est['sample-a'], 587.5);  // 2.5 m³: 300 + 5.5 × 35 + 95
-  assert.equal(est['sample-b'], 885);    // 6 m³: 720 + 2 × 35 + 95
-  assert.equal(est['sample-c'], 502.5);
-  assert.equal(est['sample-d'], 672);    // 3 m³ fine stone, pump priced later
-  assert.equal(est['sample-e'], 757.5);
+  assert.equal(est['sample-a'], 511.75);  // 2.5 m³: 2.5 × 119.50 + 213
+  assert.equal(est['sample-b'], 930);     // 6 m³: 6 × 119.50 + 213
+  assert.equal(est['sample-c'], 392.25);  // 1.5 m³
+  assert.equal(est['sample-d'], 1072.2);  // 3 m³ fine stone + SL pump (439.50 + 3 × 12.80)
+  assert.equal(est['sample-e'], 750.75);  // 4.5 m³
 });
 
 test('SL pump requests: flagged and editable by the planner', () => {
@@ -77,7 +77,7 @@ test('customer messages carry the shop price, never a planner price', () => {
   assert.equal(O.customerMessage(o), '');
   const conf = O.customerMessage(O.applyAction(o, 'confirm'));
   assert.match(conf, /^Dear Joost Bakker,/);
-  assert.match(conf, /€1,070\.85 incl\. BTW/); // 885 + 21%
+  assert.match(conf, /€1,125\.30 incl\. BTW/); // 930 + 21%
   const off = O.customerMessage(O.applyAction(o, 'offer', { slot: slot('2026-11-12', 'pm') }));
   assert.match(off, /offer Wed 11 Nov · 12:00–16:00 instead/);
   assert.doesNotMatch(off, /\b(AM|PM)\b/);

@@ -7,36 +7,41 @@ export const CONFIG = {
   locale: 'en-GB',
 
   pricing: {
-    // Price per m³ excl. BTW (James, 9 Nov: "from €120 + BTW").
-    basePerM3: 120,
-    fromPricePerM3: 120,       // "From ... per m³" on the homepage
-    // Extra per m³ by stone size.
-    stoneAddPerM3: { std: 0, mid: 8.5, fine: 14 },
-    // Extras per m³, from SL's old shop (betonconcurrent.nl): high strength, fast-setting, highly fluid (S4).
-    addOnsPerM3: { highStrength: 7.15, fastSetting: 5.5 },
-    consistencyAddPerM3: { S1: 0, S2: 0, S3: 0, S4: 3 },
+    // Prices set 16 Nov 2026 at about 5% under ikwilbetonbestellen.nl (checked for Amsterdam 1013,
+    // excl. BTW): they charge €126/m³ + €225 delivery under 10 m³, and €151/m³ all-in from 10 m³.
+    // Recheck every month or two: their prices follow diesel and cement costs.
+
+    // Price per m³ excl. BTW, for orders under `bulk.fromM3`.
+    basePerM3: 119.5,
+    fromPricePerM3: 119.5,     // "From ... per m³" on the homepage
+    // One delivery charge per order under `bulk.fromM3`.
+    deliveryUnderBulk: 213,
+    // From this size: one all-in price per m³, delivery included.
+    bulk: { fromM3: 10, perM3: 143.5 },
+
+    // Extra per m³ by stone size (theirs: fine gravel +€8).
+    stoneAddPerM3: { std: 0, mid: 7.6, fine: 7.6 },
+    // Extras per m³ (theirs: high strength +€11, fast-setting +€5, highly fluid +€4.50).
+    addOnsPerM3: { highStrength: 10.45, fastSetting: 4.75 },
+    consistencyAddPerM3: { S1: 0, S2: 0, S3: 0, S4: 4.28 },
     // BTW (Dutch VAT). Private customers see prices including it; business customers see it added.
     vatPct: 21,
     // Allowance added to the card hold for small changes on site or extra waiting time.
     contingencyPct: 15,
 
-    // SUGGESTED: polypropylene micro-fibres usually add €5–10 per m³.
+    // SUGGESTED: polypropylene micro-fibres usually add €5–10 per m³ (competitor does not list fibres).
     fibresPerM3: 8,
 
-    // Trucks carry up to 12 m³. A bigger order is split evenly over the fewest trucks
-    // (14 m³ goes as 2 × 7 m³), so buying a little extra stays fair.
+    // Trucks carry up to 12 m³. A bigger order is split evenly over the fewest trucks.
     truckM3: 12,
 
-    // SUGGESTED: part-load charge per m³ the truck is short of a full load.
-    // A truck carrying less than `underM3` pays `perM3Short` for every m³ below it,
-    // so 1 m³ pays a lot more than 7 m³ (common practice with UK and Dutch suppliers).
-    partLoad: { underM3: 8, perM3Short: 35 },
+    // No separate part-load charge any more: the delivery charge covers small loads.
+    partLoad: null,
 
-    // SUGGESTED: flat delivery charge per truck.
-    deliveryPerTruck: 95,
+    // Pump arranged by SL (theirs: trailer pump €462.50 + €13.50/m³ for a pumpable mix).
+    pumpBySL: { flat: 439.5, perM3: 12.8 },
 
     // Not set yet:
-    pumpBySL: null,            // pump hire is priced by the planner and charged separately
     saturdaySurcharge: null,
     // Waiting time after the free 30 minutes (James, 9 Nov): €50 per started 15 minutes.
     waiting: { perBlock: 50, blockMinutes: 15 },

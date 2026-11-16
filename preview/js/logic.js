@@ -92,7 +92,9 @@ export function priceOrder({ volume, stone = 'std', fibres = false, offload = nu
   const add = (key, state, amount = null, extra = {}) => lines.push({ key, state, amount: amount == null ? null : round2(amount), ...extra });
   const { trucks, perTruck } = splitTrucks(volume, p.truckM3 || Infinity);
 
-  add('concrete', 'priced', p.basePerM3 * volume);
+  // From `bulk.fromM3` there is one all-in price per m³ (delivery included).
+  const bulk = !!p.bulk && volume >= p.bulk.fromM3;
+  add('concrete', 'priced', (bulk ? p.bulk.perM3 : p.basePerM3) * volume);
 
   const stoneAdd = p.stoneAddPerM3[stone] ?? 0;
   add('stone', stoneAdd ? 'priced' : 'included', stoneAdd ? stoneAdd * volume : null);
@@ -107,20 +109,26 @@ export function priceOrder({ volume, stone = 'std', fibres = false, offload = nu
 
   if (offload !== 'pumpsl') add('pump', 'none');
   else if (p.pumpBySL == null) add('pump', 'onConfirm');
-  else add('pump', 'priced', p.pumpBySL);
+  else if (typeof p.pumpBySL === 'number') add('pump', 'priced', p.pumpBySL);
+  else add('pump', 'priced', p.pumpBySL.flat + (p.pumpBySL.perM3 || 0) * volume);
 
   if (!saturday) add('saturday', 'none');
   else if (p.saturdaySurcharge == null) add('saturday', 'tbd');
   else add('saturday', 'priced', p.saturdaySurcharge);
 
-  // Part load: each truck pays for every m³ it is short of `underM3`.
+  // Part load (older price model): each truck pays for every m³ it is short of `underM3`.
   const pl = p.partLoad || {};
+  if (!p.partLoad) add('partLoad', 'none');
+  else {
   const shortPerTruck = pl.underM3 == null ? 0 : Math.max(0, pl.underM3 - perTruck);
   if (pl.underM3 == null || pl.perM3Short == null) add('partLoad', 'tbd');
   else if (shortPerTruck > 0) add('partLoad', 'priced', trucks * shortPerTruck * pl.perM3Short, { shortM3: round2(trucks * shortPerTruck) });
   else add('partLoad', 'none');
+  }
 
-  if (p.deliveryPerTruck == null) add('delivery', 'tbd', null, { trucks });
+  if (bulk) add('delivery', 'included', null, { trucks });
+  else if (p.deliveryUnderBulk != null) add('delivery', 'priced', p.deliveryUnderBulk, { trucks });
+  else if (p.deliveryPerTruck == null) add('delivery', 'tbd', null, { trucks });
   else add('delivery', 'priced', p.deliveryPerTruck * trucks, { trucks });
 
   // total is excl. BTW. The card is always charged incl. BTW, so the hold is worked out on totalIncl.

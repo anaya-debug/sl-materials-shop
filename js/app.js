@@ -1,9 +1,9 @@
-import { CONFIG } from './config.js?v=202611121210';
-import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611121210';
-import * as L from './logic.js?v=202611121210';
-import { orderFromShop } from './orders.js?v=202611121210';
-import { submitOrder } from './backend.js?v=202611121210';
-import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611121210';
+import { CONFIG } from './config.js?v=202611161020';
+import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611161020';
+import * as L from './logic.js?v=202611161020';
+import { orderFromShop } from './orders.js?v=202611161020';
+import { submitOrder } from './backend.js?v=202611161020';
+import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611161020';
 
 const P = CONFIG.pricing;
 const C = CONFIG.contact;
@@ -193,8 +193,8 @@ function offloadNote() {
     </div>`;
   }
   if (s.offload === 'pumpsl') {
-    return `<div class="note-green" role="status">${tx('<strong>We\'ll arrange the pump.</strong> Pump hire is charged separately from the concrete. A planner will be in touch with the price before anything is booked.',
-      '<strong>Wij regelen de pomp.</strong> De pomphuur wordt apart van het beton berekend. Een planner neemt contact met je op over de prijs voordat er iets wordt geboekt.')}</div>`;
+    return `<div class="note-green" role="status">${tx('<strong>We\'ll arrange the pump.</strong> A trailer pump with up to 5 m of hose is in the price. For a longer hose or a boom pump, a planner will agree the price with you before anything is booked.',
+      '<strong>Wij regelen de pomp.</strong> Een aanhangerpomp met tot 5 m slang zit in de prijs. Voor een langere slang of een giekpomp spreekt een planner de prijs met je af voordat er iets wordt geboekt.')}</div>`;
   }
   if (s.offload === 'pumpown') {
     return `<div class="note-green" role="status">${tx('Pumping needs a fluid mix, so choose S3 or S4 below. Your pump should be set up when the truck arrives.',
@@ -346,7 +346,7 @@ function summary(d) {
     return pm(l.amount);
   };
   const line = Object.fromEntries(d.price.lines.map((l) => [l.key, l]));
-  const pl = P.partLoad;
+  const pl = P.partLoad || {};
   const tr = d.price.trucks;
   const trucks = (n) => tx(`${n} truck${n > 1 ? 's' : ''}`, `${n} ${n > 1 ? 'trucks' : 'truck'}`);
   const plLabel = line.partLoad.state === 'priced'
@@ -366,7 +366,7 @@ function summary(d) {
     [tx('Extras', 'Toevoegingen'), show(line.extras)],
     [tx('Fibres', 'Vezels'), show(line.fibres, tx('fibre price', 'vezelprijs'))],
     [tx('Pump', 'Pomp'), show(line.pump)],
-    [plLabel, show(line.partLoad, tx('to agree', 'af te spreken'))],
+    ...(P.partLoad ? [[plLabel, show(line.partLoad, tx('to agree', 'af te spreken'))]] : []),
     [deliveryLabel, deliveryValue],
   ];
   const totalLabel = tx('Estimated total, incl. BTW', 'Geschat totaal, incl. btw');
@@ -385,8 +385,8 @@ function summary(d) {
     <dl class="price-lines">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
     ${totals}
     ${tr > 1 ? `<p class="small-grey">${tx(`${m3(s.volume)} goes as ${tr} trucks of ${m3(d.price.perTruck)}.`, `${m3(s.volume)} komt in ${tr} trucks van ${m3(d.price.perTruck)}.`)}</p>` : ''}
-    <p class="small-grey">${tx('Delivered from our Zaandam plant. Preview prices: fibres, part-load and delivery charges are suggestions for the team to agree.',
-      'Geleverd vanuit onze fabriek in Zaandam. Previewprijzen: vezels, kleine vracht en levering zijn voorstellen die het team nog moet vaststellen.')}</p>
+    <p class="small-grey">${tx('Delivered direct from our Zaandam plant. One delivery charge under 10 m³; from 10 m³ delivery is included.',
+      'Rechtstreeks geleverd vanuit onze fabriek in Zaandam. Onder 10 m³ één keer bezorgkosten; vanaf 10 m³ is de levering inbegrepen.')}</p>
     <div class="help-box"><strong style="font-size:15px">${tx('Need help?', 'Hulp nodig?')}</strong><a href="${C.orderPhoneHref}">${tx('Call', 'Bel')} ${esc(C.orderPhone)}</a><span class="small-grey">${esc(tx(C.hours, C.hoursNl))}</span></div>`;
 }
 
