@@ -1,9 +1,9 @@
-import { CONFIG } from './config.js?v=202611161111';
-import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611161111';
-import * as L from './logic.js?v=202611161111';
-import { orderFromShop } from './orders.js?v=202611161111';
-import { submitOrder } from './backend.js?v=202611161111';
-import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611161111';
+import { CONFIG } from './config.js?v=202611161139';
+import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611161139';
+import * as L from './logic.js?v=202611161139';
+import { orderFromShop } from './orders.js?v=202611161139';
+import { submitOrder } from './backend.js?v=202611161139';
+import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611161139';
 
 const P = CONFIG.pricing;
 const C = CONFIG.contact;
@@ -73,7 +73,10 @@ function getDays(loc = locale()) {
   const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
   const tKey = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
   const late = L.pastCutoff(now, CONFIG.delivery.nextDayCutoff);
-  return list.filter((d) => !(late && d.key === tKey)).slice(0, CONFIG.delivery.daysShown);
+  return list
+    .filter((d) => CONFIG.delivery.saturday || !d.saturday)
+    .filter((d) => !(late && d.key === tKey))
+    .slice(0, CONFIG.delivery.daysShown);
 }
 
 // Private customers see prices incl. BTW (Dutch consumer rules); business customers see them excl. BTW.
@@ -317,20 +320,17 @@ function step4(d) {
       <dt>${tx('Contact', 'Contact')}</dt><dd>${esc(s.name)} · ${esc(s.phone)}</dd>
     </dl>
     <div class="hold">
-      <strong style="font-size:16px">${tx("You only pay for what's confirmed", 'Je betaalt alleen wat is bevestigd')}</strong>
-      <span style="line-height:1.55;color:#333">${tx(`We place a temporary hold on your card to reserve the slot. A planner calls to confirm, then we charge only the final agreed amount. The hold includes a ${P.contingencyPct}% allowance for small changes on site or extra waiting time. Anything not used is released within 24 hours of delivery.`,
-        `We reserveren het bedrag tijdelijk op je pas om het levermoment vast te houden. Een planner belt om te bevestigen; daarna schrijven we alleen het afgesproken bedrag af. De reservering bevat ${P.contingencyPct}% extra voor kleine wijzigingen op de bouwplaats of extra wachttijd. Wat niet wordt gebruikt, komt binnen 24 uur na levering vrij.`)}</span>
+      <strong style="font-size:16px">${tx('How payment works', 'Zo werkt betalen')}</strong>
+      <span style="line-height:1.55;color:#333">${tx('Nothing is charged now. A planner calls to confirm the mix, volume and slot. Straight after, we send you a payment link (iDEAL) for the confirmed amount.',
+        'Je betaalt nu nog niets. Een planner belt om het mengsel, de hoeveelheid en het levermoment te bevestigen. Direct daarna sturen we je een betaallink (iDEAL) voor het bevestigde bedrag.')}</span>
       <div class="hold-table">
-        <span>${tx('Order total, incl. BTW', 'Totaal bestelling, incl. btw')}</span><span class="num">${money(d.price.totalIncl)}</span>
-        <span>${P.contingencyPct}% ${tx('allowance', 'marge')}</span><span class="num">${money(d.price.contingency)}</span>
-        <strong>${tx('Amount held', 'Gereserveerd bedrag')}</strong><strong class="num">${money(d.price.hold)}</strong>
+        <strong>${tx('Estimated total, incl. BTW', 'Geschat totaal, incl. btw')}</strong><strong class="num">${money(d.price.totalIncl)}</strong>
       </div>
-    </div>
-    <div class="pay-slot">${tbd(tx('Payment field: iDEAL or card, through Stripe', 'Betaalveld: iDEAL of pas, via Stripe'))}</div>`;
+    </div>`;
 }
 
 function stepbar(d) {
-  const nextLabel = s.step === 4 ? tx('Confirm and hold card', 'Bevestigen en reserveren') : tx('Continue', 'Verder');
+  const nextLabel = s.step === 4 ? tx('Send order request', 'Bestelling aanvragen') : tx('Continue', 'Verder');
   return `
     ${s.step > 1 ? `<button type="button" class="btn btn-outline back" data-act="back" data-key="back">${tx('Back', 'Terug')}</button>` : ''}
     <span class="step-hint" id="step-hint" aria-live="polite">${s.step === 1 && d.check.ok ? `${esc(d.mixLabel)} ${tx('selected', 'gekozen')}. ` : ''}${esc(hintText(d.check.hint))}${s.sendError ? `<strong class="send-error">${tx(`Sorry, your request did not go through. Please try again, or call ${esc(CONFIG.contact.orderPhone)}.`, `Sorry, je aanvraag is niet verstuurd. Probeer het opnieuw of bel ${esc(CONFIG.contact.orderPhone)}.`)}</strong>` : ''}</span>
@@ -409,8 +409,8 @@ function buyView(d) {
     return `<div class="card done" role="status">
       <div class="tick"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div>
       <h3 id="step-title" tabindex="-1">${tx('Order received', 'Bestelling ontvangen')}</h3>
-      <p>${tx(`Thanks, ${first}. A planner will call you to confirm the mix, volume and your ${esc(d.slotLabel)} slot. Only the confirmed amount is charged.`,
-        `Bedankt${first ? ', ' + first : ''}. Een planner belt je om het mengsel, de hoeveelheid en je levermoment (${esc(d.slotLabel)}) te bevestigen. We schrijven alleen het bevestigde bedrag af.`)}</p>
+      <p>${tx(`Thanks, ${first}. A planner will call you to confirm the mix, volume and your ${esc(d.slotLabel)} slot. Then you get a payment link for the confirmed amount.`,
+        `Bedankt${first ? ', ' + first : ''}. Een planner belt je om het mengsel, de hoeveelheid en je levermoment (${esc(d.slotLabel)}) te bevestigen. Daarna krijg je een betaallink voor het bevestigde bedrag.`)}</p>
       <p style="font-size:15px;color:var(--grey-text)">${esc(d.mixLabel)} · ${m3(s.volume)} · ${tx('estimate', 'schatting')} ${money(d.price.totalIncl)} ${tx('incl. BTW', 'incl. btw')}</p>
       <p class="trust-line" style="text-align:left"><img src="img/truck.jpg" alt="" width="56" height="56" loading="lazy"><span>${tx("You're getting certified concrete, made to the same standards as traditional concrete, from a local Amsterdam business.",
         'Je krijgt gecertificeerd beton, gemaakt volgens dezelfde normen als traditioneel beton, van een lokaal Amsterdams bedrijf.')}</span></p>

@@ -60,7 +60,7 @@ export function customerMessage(order) {
     return `Dear ${name}, unfortunately we are unable to deliver on ${slotText(order.slot)}. We can offer ${slotText(order.offeredSlot)} instead. Please confirm this new time here: [link], or call us to discuss. ${sign}`;
   }
   if (order.status === 'declined') {
-    return `Dear ${name}, we are unable to accept this order online. A planner will call you to discuss the options. The hold on your card has been released. ${sign}`;
+    return `Dear ${name}, we are unable to accept this order online. A planner will call you to discuss the options. Nothing has been charged. ${sign}`;
   }
   return '';
 }

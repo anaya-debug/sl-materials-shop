@@ -62,6 +62,8 @@ export const CONFIG = {
     // Rough area around Zaandam (to confirm). First four digits of the postcode.
     postcodeRanges: [[1000, 1199], [1300, 1999], [2000, 2199]],
     daysShown: 6,
+    // Saturday delivery hidden until SL sets a Saturday price (decided 16 Nov).
+    saturday: false,
     nextDayCutoff: '12:00',    // 24-hour clock; after this, tomorrow is not offered (meeting 16 Nov: match competitor)
     radiusKm: 30,
   },
