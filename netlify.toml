@@ -1,0 +1,21 @@
+# Netlify: a plain static site, no build step. The site files are at the top of the repo.
+[build]
+  publish = "."
+  command = ""
+
+# Keep internal files off the public site.
+[[redirects]]
+  from = "/supabase/*"
+  to = "/404"
+  status = 404
+  force = true
+[[redirects]]
+  from = "/tests/*"
+  to = "/404"
+  status = 404
+  force = true
+[[redirects]]
+  from = "/scripts/*"
+  to = "/404"
+  status = 404
+  force = true
