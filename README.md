@@ -42,3 +42,15 @@ npm test           # unit tests for price, volume, postcode, delivery days and s
 - Uses and extras now follow SL's old shop (betonconcurrent.nl); the strength class of the standard mix is still to confirm.
 - Dutch translation of the planner inbox (the shop itself is in Dutch and English).
 - Dutch public holidays are not yet excluded from delivery days.
+
+## Search engines (launch day)
+
+The shop is hidden from search on purpose while it is a test site. At launch:
+
+1. Put the final address in `site.json` (for example `https://shop.sl-materials.nl`) and run `python3 scripts/build-seo.py`.
+2. Copy `robots.launch.txt` over `robots.txt`.
+3. Remove `<meta name="robots" content="noindex">` from `index.html` (keep it on the planner pages).
+4. Remove the yellow "Preview for review" banner and the preview switch.
+5. Submit `sitemap.xml` in Google Search Console and Bing Webmaster Tools.
+
+Run `python3 scripts/build-seo.py` again whenever prices or FAQ answers change, so the structured data matches the page.
