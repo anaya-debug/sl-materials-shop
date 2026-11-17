@@ -1,0 +1,15 @@
+# SL Materials Shop
+
+> Online shop of SL Materials for certified ready-mix concrete (Liberated Concrete), made and delivered from SL's own plant in Zaandam, the Netherlands. Up to 80% less CO₂ than reference concrete. Orders from 1 m³, delivered across Amsterdam and the region.
+
+The shop is in Dutch by default; English is available with the EN button.
+
+## Ordering
+- [Shop and price calculator](https://sl-materials-webshop.com/): choose project type or strength class (C12/15 to C45/55), volume, unloading (chute, wheelbarrow, own pump or SL pump), stone size (4–32 or 4–16 mm), consistency and delivery day. A planner confirms by phone; the customer then pays the confirmed amount by iDEAL payment link.
+- Prices excl. BTW: €119.50 per m³ plus €213.00 delivery under 10 m³; €143.50 per m³ including delivery from 10 m³. SL pump €560 per delivery.
+- Order before 12:00 on a working day for delivery the next working day, subject to availability. 30 minutes unloading time included.
+
+## Company
+- [SL Materials main site](https://www.sl-materials.nl/): company, process, projects
+- [Certificates](https://www.sl-materials.nl/certificeringen): NEN-EN 206 / NEN 8005 and other certifications
+- Contact: order line +31 6 57 76 13 12, betonplanning@sl-materials.nl; office +31 20 280 59 00, Kruisbaken 2, 1505 HS Zaandam. Mon–Fri 7:00–16:00.

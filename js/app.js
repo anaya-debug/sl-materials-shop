@@ -1,9 +1,9 @@
-import { CONFIG } from './config.js?v=202611161238';
-import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611161238';
-import * as L from './logic.js?v=202611161238';
-import { orderFromShop } from './orders.js?v=202611161238';
-import { submitOrder } from './backend.js?v=202611161238';
-import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611161238';
+import { CONFIG } from './config.js?v=202611170943';
+import { PROJECTS, MIX_CODES, OFFLOADS, CONSISTENCY, STONE_SIZES, QUOTE_PROJECT_TYPES, ADD_ONS } from './catalogue.js?v=202611170943';
+import * as L from './logic.js?v=202611170943';
+import { orderFromShop } from './orders.js?v=202611170943';
+import { submitOrder } from './backend.js?v=202611170943';
+import { tx, isNl, locale, setLang, applyStatic } from './i18n.js?v=202611170943';
 
 const P = CONFIG.pricing;
 const C = CONFIG.contact;
@@ -400,7 +400,7 @@ const TRUST = {
 };
 const trustLine = (step) => {
   const [img, en, nl] = TRUST[step];
-  return `<p class="trust-line"><img src="img/${img}.jpg" alt="" width="56" height="56" loading="lazy"><span>${tx(en, nl)}</span></p>`;
+  return `<p class="trust-line"><img src="img/thumb-${img}.jpg" alt="" width="56" height="56" loading="lazy"><span>${tx(en, nl)}</span></p>`;
 };
 
 function buyView(d) {
@@ -412,7 +412,7 @@ function buyView(d) {
       <p>${tx(`Thanks, ${first}. A planner will call you to confirm the mix, volume and your ${esc(d.slotLabel)} slot. Then you get a payment link for the confirmed amount.`,
         `Bedankt${first ? ', ' + first : ''}. Een planner belt je om het mengsel, de hoeveelheid en je levermoment (${esc(d.slotLabel)}) te bevestigen. Daarna krijg je een betaallink voor het bevestigde bedrag.`)}</p>
       <p style="font-size:15px;color:var(--grey-text)">${esc(d.mixLabel)} · ${m3(s.volume)} · ${tx('estimate', 'schatting')} ${money(d.price.totalIncl)} ${tx('incl. BTW', 'incl. btw')}</p>
-      <p class="trust-line" style="text-align:left"><img src="img/truck.jpg" alt="" width="56" height="56" loading="lazy"><span>${tx("You're getting certified concrete, made to the same standards as traditional concrete, from a local Amsterdam business.",
+      <p class="trust-line" style="text-align:left"><img src="img/thumb-truck.jpg" alt="" width="56" height="56" loading="lazy"><span>${tx("You're getting certified concrete, made to the same standards as traditional concrete, from a local Amsterdam business.",
         'Je krijgt gecertificeerd beton, gemaakt volgens dezelfde normen als traditioneel beton, van een lokaal Amsterdams bedrijf.')}</span></p>
       <p class="preview-note">${tx('Test phase: no card was charged. Your request has been sent to our planners.',
         'Testfase: er is niets afgeschreven. Je aanvraag is naar onze planners gestuurd.')}</p>

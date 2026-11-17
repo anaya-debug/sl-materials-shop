@@ -1,0 +1,45 @@
+# Use at launch: copy over robots.txt (and remove the noindex tag in index.html).
+# Search engines and AI search crawlers may read the public shop.
+User-agent: *
+Allow: /
+Disallow: /planner.html
+Disallow: /preview/
+Disallow: /demo/
+
+# Named explicitly so firewall or host rules are easy to check against.
+User-agent: Googlebot
+Allow: /
+Disallow: /planner.html
+Disallow: /preview/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /planner.html
+Disallow: /preview/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /planner.html
+Disallow: /preview/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /planner.html
+Disallow: /preview/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /planner.html
+Disallow: /preview/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /planner.html
+Disallow: /preview/
+
+User-agent: Applebot
+Allow: /
+Disallow: /planner.html
+Disallow: /preview/
+
+Sitemap: https://sl-materials-webshop.com/sitemap.xml
