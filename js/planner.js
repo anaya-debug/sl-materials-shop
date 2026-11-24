@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js?v=202611240935';
-import { formatEUR, nextDeliveryDays } from './logic.js?v=202611240935';
-import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611240935';
-import * as B from './backend.js?v=202611240935';
+import { CONFIG } from './config.js?v=202611240952';
+import { formatEUR, nextDeliveryDays } from './logic.js?v=202611240952';
+import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611240952';
+import * as B from './backend.js?v=202611240952';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => formatEUR(n, CONFIG.locale);
@@ -295,6 +295,7 @@ function showAuth(msg = '', ok = false) {
   $('forgot').hidden = set;
   $('pw-cancel').hidden = !changing;
   $('auth-msg').textContent = msg;
+  setPwVisible(false);
   $('auth-msg').classList.toggle('ok', ok);
 }
 
@@ -340,6 +341,14 @@ $('login-form').addEventListener('submit', async (e) => {
     $('auth-submit').disabled = false;
   }
 });
+
+// Show or hide what is typed in the password box.
+function setPwVisible(on) {
+  $('login-pw').type = on ? 'text' : 'password';
+  $('pw-show').textContent = on ? 'Hide password' : 'Show password';
+  $('pw-show').setAttribute('aria-pressed', String(on));
+}
+$('pw-show').addEventListener('click', () => { setPwVisible($('login-pw').type === 'password'); $('login-pw').focus(); });
 
 $('forgot').addEventListener('click', () => { mode = mode === 'reset' ? 'signin' : 'reset'; showAuth(); });
 $('change-pw').addEventListener('click', () => {
