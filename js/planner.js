@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js?v=202611170943';
-import { formatEUR, nextDeliveryDays } from './logic.js?v=202611170943';
-import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611170943';
-import * as B from './backend.js?v=202611170943';
+import { CONFIG } from './config.js?v=202611240935';
+import { formatEUR, nextDeliveryDays } from './logic.js?v=202611240935';
+import { STATUSES, applyAction, counts, customerMessage, slotText, slotSortKey, needsSLPump, needsBarrowCheck, setPump, tomorrowKey } from './orders.js?v=202611240935';
+import * as B from './backend.js?v=202611240935';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => formatEUR(n, CONFIG.locale);
@@ -33,6 +33,41 @@ function pumpBox(o) {
   </div>`;
 }
 
+// Invoice: after Confirm, a planner sends the Stripe invoice. Stripe then reports when it is paid.
+const INVOICE_LABELS = { sent: 'Invoice sent, not paid yet', paid: 'Paid', failed: 'Payment failed', cancelled: 'Invoice cancelled', unpaid: 'Marked unpaid' };
+const sending = new Set();
+function invoiceBox(o) {
+  if (o.status !== 'confirmed') return '';
+  const inv = o.invoice;
+  if (!inv?.id) {
+    const busy = sending.has(o.id);
+    return `<div class="invoice-box">
+      <button type="button" class="btn btn-green" data-act="invoice" data-id="${esc(o.id)}" data-key="invoice:${esc(o.id)}" ${busy ? 'disabled' : ''}>${busy ? 'Sending…' : 'Send invoice'}</button>
+      <span class="p-sub-line">${o.email ? `Emails ${esc(o.email)} a payment link (iDEAL or card).` : 'No email on this order: phone the customer.'}</span>
+    </div>`;
+  }
+  return `<div class="invoice-box">
+    <span class="badge badge-inv-${esc(inv.status)}">${esc(INVOICE_LABELS[inv.status] || inv.status)}</span>
+    ${inv.number ? `<span class="p-sub-line">${esc(inv.number)}${inv.total ? ` · ${money(inv.total)} incl. BTW` : ''}${inv.test ? ' · TEST' : ''}</span>` : ''}
+    ${inv.url ? `<a class="link-btn" href="${esc(inv.url)}" target="_blank" rel="noopener">Open invoice</a>` : ''}
+  </div>`;
+}
+
+async function sendInvoice(o) {
+  if (sending.has(o.id)) return;
+  sending.add(o.id); render();
+  try {
+    const invoice = await B.sendInvoice(o.id);
+    const i = orders.findIndex((x) => x.id === o.id);
+    if (i >= 0) orders[i] = { ...orders[i], invoice };
+    toastText('Invoice sent', `${o.email} has been emailed a payment link.`);
+  } catch (err) {
+    toastText('Invoice not sent', err.message || '');
+  } finally {
+    sending.delete(o.id); render();
+  }
+}
+
 function row(o) {
   const st = STATUSES[o.status];
   const isNew = o.source === 'shop' && o.status === 'waiting';
@@ -51,9 +86,9 @@ function row(o) {
         <button type="button" class="btn btn-outline" data-act="offer" data-id="${esc(o.id)}" data-key="offer:${esc(o.id)}">Offer other time</button>
         <button type="button" class="btn btn-outline btn-decline" data-act="decline" data-id="${esc(o.id)}" data-key="decline:${esc(o.id)}" aria-label="Decline request from ${esc(o.who)}">Decline</button>
       </div>`
-    : `<div class="p-done">
+    : `${invoiceBox(o)}<div class="p-done">
         <button type="button" class="link-btn" data-act="message" data-id="${esc(o.id)}" data-key="message:${esc(o.id)}">Show customer message</button>
-        <button type="button" class="link-btn" data-act="undo" data-id="${esc(o.id)}" data-key="undo:${esc(o.id)}">Undo</button>
+        ${o.invoice?.id ? '' : `<button type="button" class="link-btn" data-act="undo" data-id="${esc(o.id)}" data-key="undo:${esc(o.id)}">Undo</button>`}
       </div>`;
   return `<tr class="${isNew ? 'is-new' : ''} ${isTomorrow ? 'is-tomorrow' : ''}">
     <td data-col="slot">${isTomorrow ? '<span class="tomorrow-tag">Tomorrow</span>' : ''}${esc(slotText(o.slot))}${offered}</td>
@@ -125,6 +160,7 @@ $('rows').addEventListener('click', (e) => {
   if (!o) return;
   if (act === 'offer') return openOffer(o, b);
   if (act === 'message') return showMessage(o);
+  if (act === 'invoice') return sendInvoice(o);
   // After confirm or decline the action buttons go, so move focus to that row's Undo.
   const focusKey = act === 'undo' ? `confirm:${id}` : `undo:${id}`;
   update(id, act, {}, focusKey);

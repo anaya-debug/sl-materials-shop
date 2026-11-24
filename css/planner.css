@@ -39,6 +39,12 @@ body.planner { background: var(--section); --page: 1480px; }
 .badge-confirmed { background: var(--green); color: var(--on-green); }
 .badge-offered { background: #E4ECF7; color: #1E4A80; }
 .badge-declined { background: #F1E4DD; color: #8A3B12; }
+.invoice-box { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-bottom: 6px; }
+.invoice-box .link-btn { font-size: 14px; }
+.badge-inv-sent { background: #FCEFD9; color: #7A4A0C; }
+.badge-inv-paid { background: var(--green); color: var(--on-green); }
+.badge-inv-failed, .badge-inv-unpaid { background: #F1E4DD; color: #8A3B12; }
+.badge-inv-cancelled { background: #ECECEC; color: #444; }
 
 .p-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .p-actions .btn { min-height: 44px; padding: 10px 14px; font-size: 14px; }

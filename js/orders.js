@@ -2,8 +2,8 @@
 // For now they live in this browser only (localStorage), so the team can try the
 // whole flow locally. A real backend replaces load/save later; the rest stays.
 
-import { CONFIG } from './config.js?v=202611170943';
-import { nextDeliveryDays, formatEUR, round2, priceOrder, withVat } from './logic.js?v=202611170943';
+import { CONFIG } from './config.js?v=202611240935';
+import { nextDeliveryDays, formatEUR, round2, priceOrder, withVat } from './logic.js?v=202611240935';
 
 const KEY = 'sl-shop-orders-v2'; // v2: prices from the 9 Nov review
 
@@ -54,7 +54,7 @@ export function customerMessage(order) {
   // estimate is stored excl. BTW; customers are told the price incl. BTW.
   const price = formatEUR(withVat(order.estimate, CONFIG.pricing.vatPct), CONFIG.locale);
   if (order.status === 'confirmed') {
-    return `Dear ${name}, your concrete delivery is confirmed for ${slotText(order.slot)}: ${order.mix}, ${order.volume.toFixed(1)} m³. Final price ${price} incl. BTW. Please complete payment here: [payment link]. ${sign}`;
+    return `Dear ${name}, your concrete delivery is confirmed for ${slotText(order.slot)}: ${order.mix}, ${order.volume.toFixed(1)} m³. Final price ${price} incl. BTW. You will receive an invoice by email with a payment link (iDEAL or card). ${sign}`;
   }
   if (order.status === 'offered') {
     return `Dear ${name}, unfortunately we are unable to deliver on ${slotText(order.slot)}. We can offer ${slotText(order.offeredSlot)} instead. Please confirm this new time here: [link], or call us to discuss. ${sign}`;

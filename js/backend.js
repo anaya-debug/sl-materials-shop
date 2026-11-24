@@ -51,6 +51,17 @@ export async function saveOrder(order) {
   if (error) throw error;
 }
 
+// Planner sends the confirmed order's Stripe invoice. Returns { id, number, url, total, status }.
+export async function sendInvoice(id) {
+  const { data, error } = await db.functions.invoke('send-invoice', { body: { id } });
+  if (error) {
+    let msg = error.message;
+    try { msg = (await error.context.json()).error || msg; } catch { /* keep message */ }
+    throw new Error(msg);
+  }
+  return data.invoice;
+}
+
 // Calls back with (order, isNew) whenever an order is added or changed by anyone.
 export function watchOrders(cb) {
   return db.channel('orders')
