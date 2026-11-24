@@ -78,6 +78,8 @@ Deno.serve(async (req) => {
       collection_method: 'send_invoice',
       days_until_due: Number(Deno.env.get('INVOICE_DAYS_DUE') ?? 7),
       automatic_tax: { enabled: true },
+      // Always offer iDEAL (most Dutch customers pay this way) and card, wherever the customer opens it.
+      payment_settings: { payment_method_types: ['ideal', 'card'] },
       currency: 'eur',
       description: 'Thank you for your order. / Bedankt voor je bestelling.',
       metadata: { order_id: id },
