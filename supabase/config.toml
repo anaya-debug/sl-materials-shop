@@ -162,7 +162,7 @@ site_url = "https://sl-materials-webshop.com/planner.html"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://sl-materials-webshop.com/planner.html", "http://sl-materials-webshop.com/planner.html", "https://anaya-debug.github.io/sl-materials-shop/planner.html", "http://localhost:8790/planner.html"]
+additional_redirect_urls = ["https://shop.sl-materials.nl/planner", "https://shop.sl-materials.nl/planner.html", "https://sl-materials-shop.pages.dev/planner", "https://sl-materials-webshop.com/planner", "https://sl-materials-webshop.com/planner.html", "http://sl-materials-webshop.com/planner.html", "https://anaya-debug.github.io/sl-materials-shop/planner.html", "http://localhost:8790/planner.html"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
