@@ -284,6 +284,7 @@ function showAuth(msg = '', ok = false) {
   const set = mode === 'set', reset = mode === 'reset';
   $('auth-title').textContent = set && changing ? 'Change your password' : set ? 'Choose your password' : reset ? 'Reset your password' : 'Planner sign in';
   $('auth-hint').textContent = set ? 'At least 8 characters. You use it with your email to sign in.' : reset ? 'We will email you a link to choose a new password.' : 'For SL Materials planners only.';
+  $('ms-box').hidden = !B.MS_SIGNIN || mode !== 'signin';
   $('login-fields').hidden = set;
   $('login-email').required = !set;
   $('pw-fields').hidden = reset;
@@ -350,6 +351,12 @@ function setPwVisible(on) {
 }
 $('pw-show').addEventListener('click', () => { setPwVisible($('login-pw').type === 'password'); $('login-pw').focus(); });
 
+$('ms-signin').addEventListener('click', async () => {
+  $('ms-signin').disabled = true;
+  const { error } = await B.signInMicrosoft();
+  if (error) { $('ms-signin').disabled = false; showAuth('Microsoft sign-in is not working right now. Use your email and password.'); }
+});
+
 $('forgot').addEventListener('click', () => { mode = mode === 'reset' ? 'signin' : 'reset'; showAuth(); });
 $('change-pw').addEventListener('click', () => {
   mode = 'set'; changing = true;
@@ -413,5 +420,11 @@ $('alerts-btn').addEventListener('click', async () => {
     if (session) showAuth();
     else { mode = 'reset'; showAuth('This link has expired. Enter your email to get a new one.'); }
   } else if (session) showInbox(session);
-  else showAuth();
+  else {
+    // Back from Microsoft without being let in (for example, not set up as a planner yet).
+    const back = new URLSearchParams(location.hash.slice(1) || location.search);
+    const failed = back.has('error') || back.has('error_description');
+    if (failed) history.replaceState(null, '', location.pathname);
+    showAuth(failed ? 'That Microsoft account is not set up as a planner. Ask the office to add you.' : '');
+  }
 })();

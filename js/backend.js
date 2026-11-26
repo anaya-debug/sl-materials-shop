@@ -74,6 +74,13 @@ export function watchOrders(cb) {
 // ---- Planner login ----
 
 export const signIn = (email, password) => db.auth.signInWithPassword({ email, password });
+// "Sign in with Microsoft" (SL's own Microsoft 365). Stays hidden until SL's IT has registered
+// the app and the Azure provider is switched on in Supabase; then set this to true.
+export const MS_SIGNIN = false;
+export const signInMicrosoft = () => db.auth.signInWithOAuth({
+  provider: 'azure',
+  options: { scopes: 'email', redirectTo: location.origin + location.pathname },
+});
 export const signOut = () => db.auth.signOut();
 export const setPassword = (password) => db.auth.updateUser({ password });
 export const sendReset = (email) => db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
